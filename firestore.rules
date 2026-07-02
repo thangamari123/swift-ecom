@@ -1,0 +1,45 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    match /users/{userId} {
+      allow read, write: if request.auth != null;
+    }
+    match /products/{productId} {
+      allow read: if true;
+      allow write: if request.auth != null;
+      match /reviews/{reviewId} {
+        allow read: if true;
+        allow write: if request.auth != null;
+      }
+    }
+    match /categories/{categoryId} {
+      allow read: if true;
+      allow write: if request.auth != null;
+    }
+    match /cart/{cartId} {
+      allow read, write: if request.auth != null && request.auth.uid == cartId;
+    }
+    match /orders/{orderId} {
+      allow read: if request.auth != null;
+      allow create: if request.auth != null || true; // allow guest checkout
+      allow update, delete: if request.auth != null;
+    }
+    match /settings/{settingId} {
+      allow read: if true;
+      allow write: if request.auth != null;
+    }
+    match /storefront/{storefrontId} {
+      allow read: if true;
+      allow write: if request.auth != null;
+    }
+    match /adminUsers/{adminUserId} {
+      allow read, write: if request.auth != null;
+    }
+    match /notifications/{notificationId} {
+      allow read, write: if request.auth != null;
+    }
+    match /mail/{mailId} {
+      allow read, write: if request.auth != null;
+    }
+  }
+}
