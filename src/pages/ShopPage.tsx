@@ -7,7 +7,7 @@ import { collection, onSnapshot, query, where } from "firebase/firestore";
 import { Link, useSearchParams } from "react-router-dom";
 import { useStore } from "@/lib/store";
 import { toast } from "react-toastify";
-import { ShoppingCart, Heart, Filter, Star, Check, ChevronRight, ChevronLeft } from "lucide-react";
+import { ShoppingCart, Heart, Filter, Star, Check, ChevronRight, ChevronLeft, Search } from "lucide-react";
 
 interface Product {
   id: string;
@@ -22,12 +22,18 @@ export default function ShopPage() {
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
   const { wishlist, toggleWishlist, requireAuth } = useStore();
-  const [searchParams] = useSearchParams();
+  const [searchParams, setSearchParams] = useSearchParams();
 
   const categoryFilter = searchParams.get("category");
+
+  const categories = useMemo(() => {
+    const cats = new Set(products.map(p => p.category).filter(Boolean));
+    return Array.from(cats).sort();
+  }, [products]);
   const maxPriceFilter = searchParams.get("maxPrice");
 
   const [sortBy, setSortBy] = useState("Newest");
+  const [searchQuery, setSearchQuery] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 6;
 
@@ -50,6 +56,7 @@ export default function ShopPage() {
     let result = products.filter((product) => {
       if (categoryFilter && product.category?.trim() !== categoryFilter.trim()) return false;
       if (maxPriceFilter && product.price > Number(maxPriceFilter)) return false;
+      if (searchQuery && !product.name.toLowerCase().includes(searchQuery.toLowerCase()) && !(product.description && product.description.toLowerCase().includes(searchQuery.toLowerCase()))) return false;
       return true;
     });
 
@@ -62,7 +69,7 @@ export default function ShopPage() {
     }
 
     return result;
-  }, [products, categoryFilter, maxPriceFilter, sortBy]);
+  }, [products, categoryFilter, maxPriceFilter, sortBy, searchQuery]);
 
   const totalPages = Math.ceil(filteredProducts.length / itemsPerPage);
   const currentProducts = filteredProducts.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
@@ -141,6 +148,37 @@ export default function ShopPage() {
                 <Filter className="w-5 h-5" /> Filters
               </h3>
               
+              {/* Category */}
+              <div className="mb-8">
+                <h4 className="text-sm font-bold text-slate-900 mb-4">Category</h4>
+                <div className="space-y-3">
+                  <div className="flex items-center gap-3 cursor-pointer group" onClick={() => {
+                    const newParams = new URLSearchParams(searchParams);
+                    newParams.delete("category");
+                    setSearchParams(newParams);
+                    setCurrentPage(1);
+                  }}>
+                    <div className={`w-4 h-4 rounded border flex items-center justify-center transition-colors ${!categoryFilter ? 'border-indigo-600 bg-indigo-600' : 'border-slate-300 group-hover:border-indigo-600'}`}>
+                      <Check className={`w-3 h-3 ${!categoryFilter ? 'text-white' : 'text-transparent group-hover:text-indigo-600'} transition-colors`} />
+                    </div>
+                    <span className={`text-sm font-medium transition-colors ${!categoryFilter ? 'text-slate-900 font-bold' : 'text-slate-600 group-hover:text-slate-900'}`}>All Categories</span>
+                  </div>
+                  {categories.map(c => (
+                    <div key={c} className="flex items-center gap-3 cursor-pointer group" onClick={() => {
+                      const newParams = new URLSearchParams(searchParams);
+                      newParams.set("category", c);
+                      setSearchParams(newParams);
+                      setCurrentPage(1);
+                    }}>
+                      <div className={`w-4 h-4 rounded border flex items-center justify-center transition-colors ${categoryFilter === c ? 'border-indigo-600 bg-indigo-600' : 'border-slate-300 group-hover:border-indigo-600'}`}>
+                        <Check className={`w-3 h-3 ${categoryFilter === c ? 'text-white' : 'text-transparent group-hover:text-indigo-600'} transition-colors`} />
+                      </div>
+                      <span className={`text-sm font-medium transition-colors ${categoryFilter === c ? 'text-slate-900 font-bold' : 'text-slate-600 group-hover:text-slate-900'}`}>{c}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+              
               {/* Price */}
               <div className="mb-8">
                 <h4 className="text-sm font-bold text-slate-900 mb-4">Price</h4>
@@ -156,20 +194,7 @@ export default function ShopPage() {
                 </div>
               </div>
 
-              {/* Brand */}
-              <div className="mb-8">
-                <h4 className="text-sm font-bold text-slate-900 mb-4">Brand</h4>
-                <div className="space-y-3">
-                  {['Nike', 'Adidas', 'Puma', 'Reebok'].map(b => (
-                    <label key={b} className="flex items-center gap-3 cursor-pointer group">
-                      <div className="w-4 h-4 rounded border border-slate-300 group-hover:border-indigo-600 flex items-center justify-center transition-colors">
-                        <Check className="w-3 h-3 text-transparent group-hover:text-indigo-600 transition-colors" />
-                      </div>
-                      <span className="text-sm text-slate-600 group-hover:text-slate-900 font-medium transition-colors">{b}</span>
-                    </label>
-                  ))}
-                </div>
-              </div>
+
 
               {/* Size */}
               <div className="mb-8">
@@ -183,36 +208,43 @@ export default function ShopPage() {
                 </div>
               </div>
 
-              {/* Color */}
-              <div>
-                <h4 className="text-sm font-bold text-slate-900 mb-4">Color</h4>
-                <div className="flex flex-wrap gap-3">
-                  {['bg-black', 'bg-white border border-slate-200', 'bg-red-500', 'bg-blue-500', 'bg-green-500'].map((c, i) => (
-                    <button key={i} className={`w-8 h-8 rounded-full ${c} ring-2 ring-offset-2 ring-transparent hover:ring-indigo-400 transition-all shadow-sm`} />
-                  ))}
-                </div>
-              </div>
+
             </div>
           </div>
 
           {/* Main Content */}
           <div className="flex-1">
             {/* Top Bar */}
-            <div className="flex flex-col sm:flex-row justify-between items-center bg-white p-4 rounded-2xl border border-slate-100 shadow-sm mb-6 gap-4">
-              <p className="text-sm font-semibold text-slate-600">
-                Showing <span className="text-indigo-600">{currentProducts.length}</span> of {filteredProducts.length} products
-              </p>
-              <div className="flex items-center gap-3">
-                <span className="text-sm font-bold text-slate-900">Sort By</span>
-                <select 
-                  value={sortBy}
-                  onChange={(e) => setSortBy(e.target.value)}
-                  className="bg-slate-50 border border-slate-200 text-slate-700 text-sm rounded-xl px-4 py-2 font-medium focus:outline-none focus:ring-2 focus:ring-indigo-500/20"
-                >
-                  <option value="Newest">Newest</option>
-                  <option value="Price">Price</option>
-                  <option value="Popular">Popular</option>
-                </select>
+            <div className="flex flex-col lg:flex-row justify-between items-center bg-white p-4 rounded-2xl border border-slate-100 shadow-sm mb-6 gap-4">
+              <div className="flex-1 w-full relative">
+                <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-slate-400" />
+                <input
+                  type="text"
+                  placeholder="Search products..."
+                  value={searchQuery}
+                  onChange={(e) => {
+                    setSearchQuery(e.target.value);
+                    setCurrentPage(1);
+                  }}
+                  className="w-full bg-slate-50 border border-slate-200 text-slate-900 text-sm rounded-xl pl-12 pr-4 py-3 font-medium focus:outline-none focus:ring-2 focus:ring-indigo-500/20 transition-all placeholder:text-slate-400"
+                />
+              </div>
+              <div className="flex flex-col sm:flex-row items-center gap-4 w-full lg:w-auto">
+                <p className="text-sm font-semibold text-slate-600 whitespace-nowrap hidden xl:block">
+                  <span className="text-indigo-600">{currentProducts.length}</span> of {filteredProducts.length} items
+                </p>
+                <div className="flex items-center gap-3 w-full sm:w-auto justify-between sm:justify-start">
+                  <span className="text-sm font-bold text-slate-900 whitespace-nowrap">Sort By</span>
+                  <select 
+                    value={sortBy}
+                    onChange={(e) => setSortBy(e.target.value)}
+                    className="bg-slate-50 border border-slate-200 text-slate-700 text-sm rounded-xl px-4 py-3 font-medium focus:outline-none focus:ring-2 focus:ring-indigo-500/20 w-full sm:w-auto"
+                  >
+                    <option value="Newest">Newest</option>
+                    <option value="Price">Price</option>
+                    <option value="Popular">Popular</option>
+                  </select>
+                </div>
               </div>
             </div>
 

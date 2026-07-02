@@ -11,11 +11,11 @@ export default function AdminUsers() {
   const [users, setUsers] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
-  
+
   // Modal states
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingUser, setEditingUser] = useState<any>(null);
-  
+
   // Form state
   const [formData, setFormData] = useState({
     name: '',
@@ -127,8 +127,8 @@ export default function AdminUsers() {
           </button>
           <h1 className="text-[22px] font-bold text-slate-900 tracking-tight">Admin Users</h1>
         </div>
-        <button 
-          onClick={() => handleOpenModal()} 
+        <button
+          onClick={() => handleOpenModal()}
           className="w-10 h-10 bg-[#3b41e3] hover:bg-[#2e34e5] text-white rounded-xl flex items-center justify-center shadow-md transition-colors"
         >
           <Plus className="w-5 h-5" />
@@ -148,8 +148,8 @@ export default function AdminUsers() {
             <div key={user.id} className="p-4 md:p-5 flex items-center justify-between group hover:bg-slate-50 transition-colors">
               <div className="flex items-center flex-1 min-w-0">
                 <div className="w-12 h-12 rounded-full overflow-hidden flex-shrink-0 bg-slate-100 border border-slate-200">
-                  <img 
-                    src={user.avatar || `https://ui-avatars.com/api/?name=${user.name}&background=f1f5f9&color=475569`} 
+                  <img
+                    src={user.avatar || `https://ui-avatars.com/api/?name=${user.name}&background=f1f5f9&color=475569`}
                     alt={user.name}
                     className="w-full h-full object-cover"
                   />
@@ -160,9 +160,9 @@ export default function AdminUsers() {
                   <p className="text-[12px] text-slate-400 font-medium mt-0.5">{user.role}</p>
                 </div>
               </div>
-              
+
               <div className="flex flex-col items-end pl-4">
-                <button 
+                <button
                   onClick={() => toggleStatus(user)}
                   className="flex items-center group/status"
                 >
@@ -171,15 +171,15 @@ export default function AdminUsers() {
                   </span>
                   <RefreshCw className={`w-3 h-3 ml-1.5 opacity-0 md:group-hover:opacity-100 md:group-hover/status:opacity-100 transition-opacity ${user.status === 'Active' ? 'text-emerald-500' : 'text-rose-500'}`} />
                 </button>
-                
+
                 <div className="flex items-center gap-2 mt-3 opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity">
-                  <button 
+                  <button
                     onClick={() => handleOpenModal(user)}
                     className="text-slate-400 hover:text-[#3b41e3] transition-colors p-1"
                   >
                     <Edit2 className="w-4 h-4" />
                   </button>
-                  <button 
+                  <button
                     onClick={() => handleDelete(user.id)}
                     className="text-slate-400 hover:text-red-500 transition-colors p-1"
                   >
@@ -204,7 +204,7 @@ export default function AdminUsers() {
                 <X className="w-5 h-5" />
               </button>
             </div>
-            
+
             <form onSubmit={handleSubmit} className="p-6">
               <div className="space-y-4">
                 <div>
@@ -213,30 +213,30 @@ export default function AdminUsers() {
                     type="text"
                     required
                     value={formData.name}
-                    onChange={e => setFormData({...formData, name: e.target.value})}
+                    onChange={e => setFormData({ ...formData, name: e.target.value })}
                     className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-[#3b41e3] focus:border-transparent transition-all"
                     placeholder="e.g. John Doe"
                   />
                 </div>
-                
+
                 <div>
                   <label className="block text-[13px] font-bold text-slate-700 mb-1.5">Email Address</label>
                   <input
                     type="email"
                     required
                     value={formData.email}
-                    onChange={e => setFormData({...formData, email: e.target.value})}
+                    onChange={e => setFormData({ ...formData, email: e.target.value })}
                     className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-[#3b41e3] focus:border-transparent transition-all"
                     placeholder="e.g. admin@shoply.com"
                   />
                 </div>
-                
+
                 <div>
                   <label className="block text-[13px] font-bold text-slate-700 mb-1.5">Role</label>
                   <div className="relative">
                     <select
                       value={formData.role}
-                      onChange={e => setFormData({...formData, role: e.target.value})}
+                      onChange={e => setFormData({ ...formData, role: e.target.value })}
                       className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-[#3b41e3] focus:border-transparent transition-all appearance-none cursor-pointer"
                     >
                       <option value="Administrator">Administrator</option>
@@ -249,7 +249,7 @@ export default function AdminUsers() {
                     </div>
                   </div>
                 </div>
-                
+
                 <div>
                   <label className="block text-[13px] font-bold text-slate-700 mb-1.5">Status</label>
                   <div className="flex gap-4">
@@ -259,7 +259,7 @@ export default function AdminUsers() {
                         name="status"
                         value="Active"
                         checked={formData.status === 'Active'}
-                        onChange={e => setFormData({...formData, status: e.target.value})}
+                        onChange={e => setFormData({ ...formData, status: e.target.value })}
                         className="sr-only"
                       />
                       <div className={`flex-1 text-center py-2.5 rounded-xl text-sm font-bold border transition-colors ${formData.status === 'Active' ? 'bg-emerald-50 border-emerald-200 text-emerald-600' : 'bg-slate-50 border-slate-200 text-slate-500 hover:bg-slate-100'}`}>
@@ -272,7 +272,7 @@ export default function AdminUsers() {
                         name="status"
                         value="Inactive"
                         checked={formData.status === 'Inactive'}
-                        onChange={e => setFormData({...formData, status: e.target.value})}
+                        onChange={e => setFormData({ ...formData, status: e.target.value })}
                         className="sr-only"
                       />
                       <div className={`flex-1 text-center py-2.5 rounded-xl text-sm font-bold border transition-colors ${formData.status === 'Inactive' ? 'bg-rose-50 border-rose-200 text-rose-600' : 'bg-slate-50 border-slate-200 text-slate-500 hover:bg-slate-100'}`}>
@@ -281,19 +281,19 @@ export default function AdminUsers() {
                     </label>
                   </div>
                 </div>
-                
+
                 <div>
                   <label className="block text-[13px] font-bold text-slate-700 mb-1.5">Avatar URL (Optional)</label>
                   <input
                     type="url"
                     value={formData.avatar}
-                    onChange={e => setFormData({...formData, avatar: e.target.value})}
+                    onChange={e => setFormData({ ...formData, avatar: e.target.value })}
                     className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-[#3b41e3] focus:border-transparent transition-all"
                     placeholder="https://example.com/avatar.jpg"
                   />
                 </div>
               </div>
-              
+
               <div className="mt-8">
                 <button
                   type="submit"

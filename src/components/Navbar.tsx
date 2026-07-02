@@ -1,5 +1,5 @@
-import { Link, useNavigate } from 'react-router-dom';
-import { ShoppingCart, Heart, User, LogOut, Search, Menu, X, ShieldCheck, Bell } from 'lucide-react';
+import { Link, useNavigate, useLocation } from 'react-router-dom';
+import { ShoppingCart, Heart, User, LogOut, Search, Menu, X, ShieldCheck, Bell, Home, ShoppingBag, Grid, Info, Mail } from 'lucide-react';
 import { useStore } from '@/lib/store';
 import { auth, db } from '@/lib/firebase';
 import { signOut } from 'firebase/auth';
@@ -12,6 +12,7 @@ export function Navbar() {
   const [notifications, setNotifications] = useState<any[]>([]);
   const [isNotificationsOpen, setIsNotificationsOpen] = useState(false);
   const navigate = useNavigate();
+  const location = useLocation();
 
   useEffect(() => {
     if (!user) return;
@@ -78,14 +79,12 @@ export function Navbar() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between h-16 items-center">
           
-          {/* Mobile Menu Button (Left on mobile) */}
-          <div className="md:hidden flex items-center">
-             <button onClick={() => setIsMobileMenuOpen(true)} className="text-slate-500 hover:text-slate-900">
-               <Menu className="h-6 w-6" />
-             </button>
-          </div>
+          <div className="flex items-center flex-1 md:flex-none">
+            {/* Mobile Menu Button */}
+            <button onClick={() => setIsMobileMenuOpen(true)} className="text-slate-500 hover:text-slate-900 md:hidden mr-3 -ml-1">
+              <Menu className="h-6 w-6" />
+            </button>
 
-          <div className="flex items-center justify-center flex-1 md:flex-none md:justify-start">
             <Link to="/" className="flex-shrink-0 flex items-center">
               {storeSettings?.logoUrl ? (
                 <img src={storeSettings.logoUrl} alt={storeSettings.storeName || 'Shop'} className="h-8 max-w-[120px] object-contain" />
@@ -93,27 +92,31 @@ export function Navbar() {
                 <span className="font-bold text-2xl tracking-tight text-slate-900">{storeSettings?.storeName || 'Shoply.'}</span>
               )}
             </Link>
-            <div className="hidden md:ml-10 md:flex md:space-x-8">
-              <Link to="/" className="text-slate-500 hover:text-slate-900 px-3 py-2 text-sm font-medium">Home</Link>
-              <Link to="/shop" className="text-slate-500 hover:text-slate-900 px-3 py-2 text-sm font-medium">Shop</Link>
+            
+            <div className="hidden lg:ml-8 lg:flex lg:items-center lg:space-x-3">
+              <Link to="/" className={`px-4 py-2 rounded-full text-[14px] font-semibold transition-colors ${location.pathname === '/' ? 'bg-blue-600 text-white' : 'bg-slate-50 text-slate-700 hover:bg-slate-100'}`}>Home</Link>
+              <Link to="/shop" className={`px-4 py-2 rounded-full text-[14px] font-semibold transition-colors ${location.pathname === '/shop' ? 'bg-blue-600 text-white' : 'bg-slate-50 text-slate-700 hover:bg-slate-100'}`}>Shop</Link>
+              <Link to="/categories" className={`px-4 py-2 rounded-full text-[14px] font-semibold transition-colors ${location.pathname === '/categories' ? 'bg-blue-600 text-white' : 'bg-slate-50 text-slate-700 hover:bg-slate-100'}`}>Categories</Link>
+              <Link to="/about" className={`px-4 py-2 rounded-full text-[14px] font-semibold transition-colors ${location.pathname === '/about' ? 'bg-blue-600 text-white' : 'bg-slate-50 text-slate-700 hover:bg-slate-100'}`}>About</Link>
+              <Link to="/contact" className={`px-4 py-2 rounded-full text-[14px] font-semibold transition-colors ${location.pathname === '/contact' ? 'bg-blue-600 text-white' : 'bg-slate-50 text-slate-700 hover:bg-slate-100'}`}>Contact</Link>
             </div>
           </div>
           
-          <div className="flex items-center space-x-4">
-            <div className="hidden md:flex items-center bg-slate-100 rounded-full px-3 py-1.5">
-              <Search className="h-4 w-4 text-slate-400" />
-              <input type="text" placeholder="Search..." className="bg-transparent border-none focus:outline-none focus:ring-0 text-sm ml-2 w-32 lg:w-48" />
+          <div className="flex items-center space-x-2 md:space-x-4">
+            <div className="hidden lg:flex items-center bg-slate-50 hover:bg-slate-100 transition-colors rounded-full px-4 py-2.5">
+              <Search className="h-[18px] w-[18px] text-slate-500" />
+              <input type="text" placeholder="Search products..." className="bg-transparent border-none focus:outline-none focus:ring-0 text-[14px] ml-2 w-48 xl:w-64 placeholder:text-slate-400 text-slate-700" />
             </div>
 
-            <div className="flex items-center space-x-4">
-              <button className="text-slate-500 hover:text-slate-900 md:hidden">
+            <div className="flex items-center space-x-2 md:space-x-3">
+              <button className="text-slate-600 hover:text-slate-900 lg:hidden">
                 <Search className="h-5 w-5" />
               </button>
 
-              <Link to="/wishlist" className="hidden md:flex text-slate-500 hover:text-slate-900 relative">
-                <Heart className="h-6 w-6" />
+              <Link to="/wishlist" className="hidden md:flex items-center justify-center w-10 h-10 rounded-full border border-slate-200 text-slate-600 hover:text-slate-900 hover:bg-slate-50 transition-colors relative">
+                <Heart className="h-[18px] w-[18px]" />
                 {wishlist.length > 0 && (
-                  <span className="absolute -top-1 -right-1 bg-red-500 text-white text-[10px] rounded-full h-4 w-4 flex items-center justify-center">
+                  <span className="absolute -top-1 -right-1 bg-red-500 text-white text-[10px] rounded-full h-4 w-4 flex items-center justify-center font-bold shadow-sm">
                     {wishlist.length}
                   </span>
                 )}
@@ -128,11 +131,11 @@ export function Navbar() {
                     }
                     setIsNotificationsOpen(!isNotificationsOpen);
                   }} 
-                  className="text-slate-500 hover:text-slate-900 relative flex items-center"
+                  className="flex items-center justify-center w-10 h-10 rounded-full border border-slate-200 text-slate-600 hover:text-slate-900 hover:bg-slate-50 transition-colors relative"
                 >
-                  <Bell className="h-5 w-5 md:h-6 md:w-6" />
+                  <Bell className="h-[18px] w-[18px]" />
                   {user && notifications.filter(n => !n.read).length > 0 && (
-                    <span className="absolute -top-1 -right-1 bg-indigo-500 text-white text-[10px] rounded-full h-4 w-4 flex items-center justify-center">
+                    <span className="absolute -top-1 -right-1 bg-indigo-500 text-white text-[10px] rounded-full h-4 w-4 flex items-center justify-center font-bold shadow-sm">
                       {notifications.filter(n => !n.read).length}
                     </span>
                   )}
@@ -171,32 +174,33 @@ export function Navbar() {
                 )}
               </div>
 
-              <Link to="/cart" className="hidden md:flex text-slate-500 hover:text-slate-900 relative">
-                <ShoppingCart className="h-5 w-5 md:h-6 md:w-6" />
+              <Link to="/cart" className="hidden md:flex items-center justify-center w-10 h-10 rounded-full border border-slate-200 text-slate-600 hover:text-slate-900 hover:bg-slate-50 transition-colors relative">
+                <ShoppingCart className="h-[18px] w-[18px]" />
                 {cartItemsCount > 0 && (
-                  <span className="absolute -top-1 -right-1 bg-blue-600 text-white text-[10px] rounded-full h-4 w-4 flex items-center justify-center">
+                  <span className="absolute -top-1 -right-1 bg-blue-600 text-white text-[10px] rounded-full h-4 w-4 flex items-center justify-center font-bold shadow-sm">
                     {cartItemsCount}
                   </span>
                 )}
               </Link>
 
               {user ? (
-                <div className="hidden md:flex items-center space-x-3">
-                  {(userRole && userRole !== 'customer' || user?.email === 'editztm3@gmail.com') && (
-                    <Link to="/admin" className="px-3 py-1.5 text-sm font-medium text-white bg-slate-900 rounded-md hover:bg-slate-800 transition-colors flex items-center">
-                      <ShieldCheck className="w-4 h-4 mr-1.5" />
-                      Admin
+                <>
+                  <div className="hidden md:flex items-center space-x-2 md:space-x-3">
+                    <Link to="/account" className="flex items-center justify-center w-10 h-10 rounded-full border border-slate-200 text-slate-600 hover:text-indigo-600 hover:border-indigo-200 hover:bg-indigo-50 transition-colors">
+                      <User className="h-[18px] w-[18px]" />
                     </Link>
-                  )}
-                  <Link to="/account" className="text-slate-500 hover:text-slate-900">
-                    <User className="h-6 w-6" />
-                  </Link>
-                  <button onClick={handleLogout} className="text-slate-500 hover:text-red-600">
-                    <LogOut className="h-5 w-5" />
-                  </button>
-                </div>
+                    {(userRole && userRole !== 'customer' || user?.email === 'editztm3@gmail.com') && (
+                      <Link to="/admin" title="Admin Panel" className="flex items-center justify-center w-10 h-10 rounded-full border border-slate-200 text-slate-600 hover:text-indigo-600 hover:border-indigo-200 hover:bg-indigo-50 transition-colors">
+                        <ShieldCheck className="h-[18px] w-[18px]" />
+                      </Link>
+                    )}
+                    <button onClick={handleLogout} className="flex items-center justify-center w-10 h-10 rounded-full border border-slate-200 text-slate-600 hover:text-red-600 hover:border-red-200 hover:bg-red-50 transition-colors" title="Logout">
+                      <LogOut className="h-[18px] w-[18px] ml-0.5" />
+                    </button>
+                  </div>
+                </>
               ) : (
-                <Link to="/login" className="hidden md:block text-sm font-medium text-slate-700 hover:text-slate-900">Login</Link>
+                <Link to="/login" className="hidden md:flex items-center justify-center h-10 px-5 rounded-full border border-slate-200 text-[13px] font-bold text-slate-700 hover:bg-slate-50 transition-colors">Login</Link>
               )}
             </div>
           </div>
@@ -221,84 +225,76 @@ export function Navbar() {
           {storeSettings?.logoUrl ? (
             <img src={storeSettings.logoUrl} alt={storeSettings.storeName || 'Shop'} className="h-8 max-w-[150px] object-contain" />
           ) : (
-            <span className="font-bold text-2xl tracking-tight text-slate-900">{storeSettings?.storeName || 'Shoply.'}</span>
+            <span className="font-bold text-xl tracking-tight text-slate-900">{storeSettings?.storeName || 'SwiftStore'}</span>
           )}
-          <button onClick={() => setIsMobileMenuOpen(false)} className="text-slate-400 hover:text-slate-600 bg-slate-50 p-2 rounded-full transition-colors">
+          <button onClick={() => setIsMobileMenuOpen(false)} className="text-slate-500 hover:text-slate-900 bg-[#F4F6F8] p-2 rounded-full transition-colors">
             <X className="h-5 w-5" />
           </button>
         </div>
 
-        <div className="flex-1 overflow-y-auto py-4">
-          <div className="px-4 space-y-1">
-            <Link to="/" onClick={() => setIsMobileMenuOpen(false)} className="block px-4 py-3 text-base font-medium text-slate-700 hover:text-slate-900 hover:bg-slate-50 rounded-xl">Home</Link>
-            <Link to="/shop" onClick={() => setIsMobileMenuOpen(false)} className="block px-4 py-3 text-base font-medium text-slate-700 hover:text-slate-900 hover:bg-slate-50 rounded-xl">Shop</Link>
-            <Link to="/wishlist" onClick={() => setIsMobileMenuOpen(false)} className="flex items-center justify-between px-4 py-3 text-base font-medium text-slate-700 hover:text-slate-900 hover:bg-slate-50 rounded-xl">
-              <div className="flex items-center">
-                <Heart className="w-5 h-5 mr-3 text-slate-400" />
-                Wishlist
+        <div className="flex-1 overflow-y-auto py-6">
+          <div className="px-4 space-y-2">
+            <Link to="/" onClick={() => setIsMobileMenuOpen(false)} className={`flex items-center px-4 py-2.5 text-[15px] font-semibold rounded-[20px] transition-colors ${location.pathname === '/' ? 'bg-blue-50 text-blue-600' : 'text-slate-700 hover:bg-slate-50'}`}>
+              <div className={`flex items-center justify-center w-10 h-10 rounded-full mr-4 ${location.pathname === '/' ? 'bg-transparent text-blue-600' : 'bg-[#F4F6F8] text-[#5C6A82]'}`}>
+                <Home className="w-5 h-5" />
               </div>
-              {wishlist.length > 0 && <span className="bg-red-100 text-red-600 px-2 py-0.5 rounded-full text-xs font-bold">{wishlist.length}</span>}
+              Home
             </Link>
-            <Link to="/cart" onClick={() => setIsMobileMenuOpen(false)} className="flex items-center justify-between px-4 py-3 text-base font-medium text-slate-700 hover:text-slate-900 hover:bg-slate-50 rounded-xl">
-              <div className="flex items-center">
-                <ShoppingCart className="w-5 h-5 mr-3 text-slate-400" />
-                Cart
+            
+            <Link to="/shop" onClick={() => setIsMobileMenuOpen(false)} className={`flex items-center px-4 py-2.5 text-[15px] font-semibold rounded-[20px] transition-colors ${location.pathname === '/shop' ? 'bg-blue-50 text-blue-600' : 'text-slate-700 hover:bg-slate-50'}`}>
+              <div className={`flex items-center justify-center w-10 h-10 rounded-full mr-4 ${location.pathname === '/shop' ? 'bg-transparent text-blue-600' : 'bg-[#F4F6F8] text-[#5C6A82]'}`}>
+                <ShoppingBag className="w-5 h-5" />
               </div>
-              {cartItemsCount > 0 && <span className="bg-blue-100 text-blue-600 px-2 py-0.5 rounded-full text-xs font-bold">{cartItemsCount}</span>}
+              Shop
             </Link>
-            {user && (
-              <div className="mt-4 border-t border-slate-100 pt-4">
-                <div className="px-4 text-xs font-bold text-slate-400 uppercase tracking-wider mb-2 flex justify-between items-center">
-                  <span>Notifications</span>
-                  {notifications.filter(n => !n.read).length > 0 && (
-                     <span className="bg-indigo-100 text-indigo-600 px-2 py-0.5 rounded-full text-[10px] font-bold">
-                       {notifications.filter(n => !n.read).length} New
-                     </span>
-                  )}
-                </div>
-                {notifications.length === 0 ? (
-                  <div className="px-8 py-4 text-slate-400 text-sm italic">No notifications</div>
-                ) : (
-                  notifications.slice(0, 5).map(notification => (
-                    <button 
-                      key={notification.id}
-                      onClick={() => handleNotificationClick(notification)} 
-                      className="w-full flex items-center px-4 py-3 text-sm text-left hover:bg-slate-50 rounded-xl"
-                    >
-                      <Bell className={`w-4 h-4 mr-3 ${!notification.read ? 'text-indigo-500' : 'text-slate-400'}`} />
-                      <div className="flex-1 overflow-hidden">
-                        <div className={`truncate ${!notification.read ? 'font-bold text-slate-900' : 'font-medium text-slate-700'}`}>{notification.title}</div>
-                        <div className="text-xs text-slate-500 truncate">{notification.message}</div>
-                      </div>
-                    </button>
-                  ))
-                )}
+
+            <Link to="/categories" onClick={() => setIsMobileMenuOpen(false)} className={`flex items-center px-4 py-2.5 text-[15px] font-semibold rounded-[20px] transition-colors ${location.pathname === '/categories' ? 'bg-blue-50 text-blue-600' : 'text-slate-700 hover:bg-slate-50'}`}>
+              <div className={`flex items-center justify-center w-10 h-10 rounded-full mr-4 ${location.pathname === '/categories' ? 'bg-transparent text-blue-600' : 'bg-[#F4F6F8] text-[#5C6A82]'}`}>
+                <Grid className="w-5 h-5" />
               </div>
-            )}
+              Categories
+            </Link>
+
+            <Link to="/about" onClick={() => setIsMobileMenuOpen(false)} className={`flex items-center px-4 py-2.5 text-[15px] font-semibold rounded-[20px] transition-colors ${location.pathname === '/about' ? 'bg-blue-50 text-blue-600' : 'text-slate-700 hover:bg-slate-50'}`}>
+              <div className={`flex items-center justify-center w-10 h-10 rounded-full mr-4 ${location.pathname === '/about' ? 'bg-transparent text-blue-600' : 'bg-[#F4F6F8] text-[#5C6A82]'}`}>
+                <Info className="w-5 h-5" />
+              </div>
+              About
+            </Link>
+
+            <Link to="/contact" onClick={() => setIsMobileMenuOpen(false)} className={`flex items-center px-4 py-2.5 text-[15px] font-semibold rounded-[20px] transition-colors ${location.pathname === '/contact' ? 'bg-blue-50 text-blue-600' : 'text-slate-700 hover:bg-slate-50'}`}>
+              <div className={`flex items-center justify-center w-10 h-10 rounded-full mr-4 ${location.pathname === '/contact' ? 'bg-transparent text-blue-600' : 'bg-[#F4F6F8] text-[#5C6A82]'}`}>
+                <Mail className="w-5 h-5" />
+              </div>
+              Contact
+            </Link>
           </div>
 
-          <div className="px-4 mt-4">
-            <h4 className="px-4 text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">Account</h4>
-            <div className="space-y-1">
+          <div className="px-4 mt-8">
+            <div className="space-y-3">
               {user ? (
                  <>
+                   <Link to="/account" onClick={() => setIsMobileMenuOpen(false)} className="flex items-center px-4 py-2.5 text-[15px] font-semibold text-blue-600 bg-blue-50 hover:bg-blue-100 rounded-[20px] transition-colors">
+                     <div className="flex items-center justify-center w-10 h-10 rounded-full mr-4 bg-transparent text-blue-600">
+                       <User className="w-5 h-5" />
+                     </div>
+                     My Account
+                   </Link>
                    {(userRole === 'admin' || user?.email === 'editztm3@gmail.com') && (
-                     <Link to="/admin" onClick={() => setIsMobileMenuOpen(false)} className="px-4 py-3 text-base font-medium text-indigo-600 hover:text-indigo-700 hover:bg-indigo-50 rounded-xl flex items-center">
-                       <ShieldCheck className="w-5 h-5 mr-3" />
+                     <Link to="/admin" onClick={() => setIsMobileMenuOpen(false)} className="flex items-center px-4 py-2.5 text-[15px] font-semibold text-indigo-600 bg-indigo-50 hover:bg-indigo-100 rounded-[20px] transition-colors">
+                       <div className="flex items-center justify-center w-10 h-10 rounded-full mr-4 bg-transparent text-indigo-600">
+                         <ShieldCheck className="w-5 h-5" />
+                       </div>
                        Admin Dashboard
                      </Link>
                    )}
-                   <Link to="/account" onClick={() => setIsMobileMenuOpen(false)} className="flex items-center px-4 py-3 text-base font-medium text-slate-700 hover:text-slate-900 hover:bg-slate-50 rounded-xl">
-                     <User className="w-5 h-5 mr-3 text-slate-400" />
-                     My Account
-                   </Link>
-                   <button onClick={() => { handleLogout(); setIsMobileMenuOpen(false); }} className="flex items-center w-full text-left px-4 py-3 text-base font-medium text-red-600 hover:bg-red-50 rounded-xl">
-                     <LogOut className="w-5 h-5 mr-3 text-red-400" />
+                   <button onClick={() => { handleLogout(); setIsMobileMenuOpen(false); }} className="flex items-center w-full text-left px-5 py-2.5 mt-2 text-[15px] font-semibold text-[#FF4C4C] hover:bg-red-50 rounded-[20px] transition-colors">
+                     <LogOut className="w-5 h-5 mr-5 ml-1" />
                      Logout
                    </button>
                  </>
               ) : (
-                <Link to="/login" onClick={() => setIsMobileMenuOpen(false)} className="block px-4 py-3 text-base font-bold text-center text-white bg-slate-900 hover:bg-slate-800 rounded-xl mt-2">Login / Register</Link>
+                <Link to="/login" onClick={() => setIsMobileMenuOpen(false)} className="flex justify-center items-center px-4 py-3 text-base font-bold text-white bg-blue-600 hover:bg-blue-700 rounded-full mt-2 transition-colors">Login / Register</Link>
               )}
             </div>
           </div>

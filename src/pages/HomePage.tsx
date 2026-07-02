@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { Navbar } from '@/components/Navbar';
 import { BottomNav } from '@/components/BottomNav';
 import { Footer } from '@/components/Footer';
@@ -30,6 +30,10 @@ export default function HomePage() {
   const getSectionEnabled = (sectionKey: string) =>
     storefront?.sectionConfig?.[sectionKey]?.enabled ?? true;
 
+  const categoriesScrollRef = useRef<HTMLDivElement>(null);
+  const trendingScrollRef = useRef<HTMLDivElement>(null);
+  const newArrivalsScrollRef = useRef<HTMLDivElement>(null);
+
   // Auto-advance hero slider
   useEffect(() => {
     if (slides.length === 0) return;
@@ -38,6 +42,55 @@ export default function HomePage() {
     }, 4000);
     return () => clearInterval(timer);
   }, [slides.length]);
+
+  // Auto-scroll categories on mobile (Forward)
+  useEffect(() => {
+    const interval = setInterval(() => {
+      if (window.innerWidth < 768 && categoriesScrollRef.current) {
+        const container = categoriesScrollRef.current;
+        const maxScroll = container.scrollWidth - container.clientWidth;
+        if (container.scrollLeft >= maxScroll - 10) {
+          container.scrollTo({ left: 0, behavior: 'smooth' });
+        } else {
+          container.scrollBy({ left: container.clientWidth * 0.45, behavior: 'smooth' });
+        }
+      }
+    }, 3500);
+    return () => clearInterval(interval);
+  }, []);
+
+  // Auto-scroll trending products on mobile (Forward/Right)
+  useEffect(() => {
+    const interval = setInterval(() => {
+      if (window.innerWidth < 768 && trendingScrollRef.current) {
+        const container = trendingScrollRef.current;
+        const maxScroll = container.scrollWidth - container.clientWidth;
+        if (container.scrollLeft >= maxScroll - 10) {
+          container.scrollTo({ left: 0, behavior: 'smooth' });
+        } else {
+          container.scrollBy({ left: container.clientWidth * 0.4, behavior: 'smooth' });
+        }
+      }
+    }, 3500);
+    
+    return () => clearInterval(interval);
+  }, [featuredProducts.length]);
+
+  // Auto-scroll new arrivals on mobile (Forward/Right)
+  useEffect(() => {
+    const interval = setInterval(() => {
+      if (window.innerWidth < 768 && newArrivalsScrollRef.current) {
+        const container = newArrivalsScrollRef.current;
+        const maxScroll = container.scrollWidth - container.clientWidth;
+        if (container.scrollLeft >= maxScroll - 10) {
+          container.scrollTo({ left: 0, behavior: 'smooth' });
+        } else {
+          container.scrollBy({ left: container.clientWidth * 0.4, behavior: 'smooth' });
+        }
+      }
+    }, 3500);
+    return () => clearInterval(interval);
+  }, [featuredProducts.length]);
 
   // Firestore listeners
   useEffect(() => {
@@ -76,7 +129,7 @@ export default function HomePage() {
         {/* ─── HERO SLIDER ─── */}
         {getSectionEnabled('heroSlider') && slides.length > 0 && (
           <section className="px-3 pt-3 md:px-6 md:pt-6">
-            <div className="relative w-full overflow-hidden rounded-2xl md:rounded-3xl shadow-md" style={{ height: 'clamp(180px, 42vw, 340px)' }}>
+            <div className="relative w-full overflow-hidden rounded-2xl md:rounded-3xl shadow-md aspect-[1931/814]">
               {/* Slides track */}
               <div
                 className="flex h-full transition-transform duration-500 ease-in-out"
@@ -143,7 +196,11 @@ export default function HomePage() {
               </Link>
             </div>
 
-            <div className="grid grid-cols-3 md:grid-cols-5 gap-3 md:gap-5">
+            <div 
+              ref={categoriesScrollRef}
+              className="flex md:grid md:grid-cols-5 gap-3 md:gap-5 overflow-x-auto snap-x snap-mandatory pb-4 -mx-4 px-4 md:mx-0 md:px-0 scroll-smooth [&::-webkit-scrollbar]:hidden"
+              style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
+            >
               {(storefront?.shopByCategory || [
                 { name: 'Men', image: 'https://images.unsplash.com/photo-1516826957135-700ede19c111?w=600', label: 'Men' },
                 { name: 'Women', image: 'https://images.unsplash.com/photo-1483985988355-763728e1935b?w=600', label: 'Women' },
@@ -154,7 +211,7 @@ export default function HomePage() {
                 <Link
                   key={i}
                   to={`/shop?category=${encodeURIComponent(cat.name)}`}
-                  className="group relative rounded-2xl md:rounded-3xl overflow-hidden aspect-[4/5] md:aspect-square block shadow-sm hover:shadow-xl transition-all duration-300"
+                  className="group relative rounded-2xl md:rounded-3xl overflow-hidden aspect-[4/5] md:aspect-square block flex-none w-[28%] md:w-auto snap-start shadow-sm hover:shadow-xl transition-all duration-300"
                 >
                   {/* Background Image */}
                   <img
@@ -187,7 +244,7 @@ export default function HomePage() {
 
         {/* ─── HELPER COMPONENT FOR PRODUCT GRIDS ─── */}
         {(() => {
-          const ProductSection = ({ title, products, link, linkText }: any) => {
+          const ProductSection = ({ title, products, link, linkText, scrollRef }: any) => {
             if (products.length === 0) return null;
             return (
               <section className="px-4 md:px-6 py-5 md:py-8 border-t border-slate-100">
@@ -197,7 +254,11 @@ export default function HomePage() {
                     {linkText} <ArrowRight className="w-4 h-4" />
                   </Link>
                 </div>
-                <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-3 md:gap-5">
+                <div 
+                  ref={scrollRef}
+                  className="flex md:grid md:grid-cols-4 lg:grid-cols-5 gap-3 md:gap-5 overflow-x-auto snap-x snap-mandatory pb-4 -mx-4 px-4 md:mx-0 md:px-0 scroll-smooth [&::-webkit-scrollbar]:hidden"
+                  style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
+                >
                   {products.map((product: any, idx: number) => {
                     let badge = null;
                     if (idx % 3 === 0) badge = <span className="absolute top-2.5 left-2.5 bg-[#0f172a] text-white text-[9px] md:text-[10px] font-bold px-2.5 py-1 rounded-md uppercase tracking-wider shadow-sm z-10">New</span>;
@@ -210,7 +271,7 @@ export default function HomePage() {
                       <Link
                         to={`/product/${product.id}`}
                         key={product.id}
-                        className="group flex flex-col bg-white rounded-2xl overflow-hidden shadow-[0_2px_12px_-4px_rgba(0,0,0,0.08)] border border-slate-100 hover:shadow-[0_8px_24px_-8px_rgba(0,0,0,0.12)] transition-all duration-300 hover:-translate-y-1"
+                        className="group flex-none w-[35%] md:w-auto snap-start flex flex-col bg-white rounded-2xl overflow-hidden shadow-[0_2px_12px_-4px_rgba(0,0,0,0.08)] border border-slate-100 hover:shadow-[0_8px_24px_-8px_rgba(0,0,0,0.12)] transition-all duration-300 hover:-translate-y-1"
                       >
                         <div className="relative aspect-[4/5] w-full bg-slate-100 overflow-hidden flex items-center justify-center">
                           {badge}
@@ -255,33 +316,34 @@ export default function HomePage() {
                 products={(featuredProducts.filter(p => p.trending).length > 0 ? featuredProducts.filter(p => p.trending) : featuredProducts).slice(0, 6)}
                 link="/shop"
                 linkText="View All →"
+                scrollRef={trendingScrollRef}
               />
 
               {/* ─── SPECIAL OFFER BANNER ─── */}
               <section className="px-4 md:px-6 pb-6 md:pb-8">
                 <Link to="/shop">
-                  <div className="relative w-full rounded-2xl md:rounded-3xl overflow-hidden bg-[#f4f2ef] shadow-sm hover:shadow-md transition-shadow group flex items-center min-h-[220px] md:h-64">
+                  <div className="relative w-full rounded-2xl md:rounded-3xl overflow-hidden bg-[#f4f2ef] shadow-sm hover:shadow-md transition-shadow group flex items-center min-h-[180px] sm:min-h-[220px] md:h-64">
                     {/* Background Image Container */}
                     <div className="absolute inset-0 w-full h-full md:left-1/4 md:w-3/4 flex justify-end">
                       {/* Gradient mask to blend the image seamlessly into the left background */}
-                      <div className="absolute inset-0 bg-gradient-to-r from-[#f4f2ef] via-[#f4f2ef]/80 to-transparent z-10 w-2/3 md:w-1/2"></div>
+                      <div className="absolute inset-0 bg-gradient-to-r from-[#f4f2ef] via-[#f4f2ef]/90 to-transparent z-10 w-4/5 md:w-1/2"></div>
                       <img
                         src="https://images.unsplash.com/photo-1469334031218-e382a71b716b?q=80&w=1200&auto=format&fit=crop"
-                        className="w-3/4 md:w-full h-full object-cover object-top opacity-90 group-hover:scale-105 transition-transform duration-700"
+                        className="w-[85%] md:w-full h-full object-cover object-[70%_top] md:object-top opacity-90 group-hover:scale-105 transition-transform duration-700"
                         alt="Summer Sale"
                       />
                     </div>
 
                     {/* Text Content */}
-                    <div className="relative z-20 flex flex-col justify-center h-full p-6 md:p-12 w-full md:w-1/2 max-w-[320px] md:max-w-none">
-                      <p className="text-red-500 font-bold text-[10px] md:text-xs tracking-[0.2em] uppercase mb-2 md:mb-3">Summer Sale</p>
-                      <h2 className="text-3xl md:text-5xl font-black text-slate-900 leading-tight mb-2 md:mb-3 tracking-tight">UP TO 60% OFF</h2>
-                      <p className="text-xs md:text-sm text-slate-600 font-medium mb-5 md:mb-6">
-                        Limited Time Offer. <br className="md:hidden" />Don't Miss Out!
+                    <div className="relative z-20 flex flex-col justify-center h-full p-5 sm:p-8 md:p-12 w-[70%] sm:w-[60%] md:w-1/2">
+                      <p className="text-red-500 font-bold text-[9px] sm:text-[10px] md:text-xs tracking-[0.2em] uppercase mb-1.5 md:mb-3">Summer Sale</p>
+                      <h2 className="text-[22px] sm:text-3xl md:text-5xl font-black text-slate-900 leading-[1.1] mb-1.5 md:mb-3 tracking-tight">UP TO 60% OFF</h2>
+                      <p className="text-[11px] sm:text-xs md:text-sm text-slate-600 font-medium mb-4 md:mb-6 leading-snug">
+                        Limited Time Offer.<br />Don't Miss Out!
                       </p>
 
-                      <div className="inline-flex items-center justify-center gap-2 bg-[#111] hover:bg-black text-white px-5 py-2.5 md:px-6 md:py-3 rounded-xl text-xs md:text-sm font-bold w-max shadow-sm transition-colors">
-                        Shop Now <ArrowRight className="w-4 h-4" />
+                      <div className="inline-flex items-center justify-center gap-1.5 md:gap-2 bg-[#111] hover:bg-black text-white px-4 py-2 md:px-6 md:py-3 rounded-lg md:rounded-xl text-[11px] md:text-sm font-bold w-max shadow-sm transition-colors">
+                        Shop Now <ArrowRight className="w-3.5 h-3.5 md:w-4 md:h-4" />
                       </div>
                     </div>
                   </div>
@@ -293,6 +355,7 @@ export default function HomePage() {
                 products={(featuredProducts.filter(p => p.newArrival).length > 0 ? featuredProducts.filter(p => p.newArrival) : featuredProducts).slice(0, 6)}
                 link="/shop"
                 linkText="View All →"
+                scrollRef={newArrivalsScrollRef}
               />
 
               <ProductSection title="👔 Men's Collection" products={featuredProducts.filter(p => p.category === 'Men').slice(0, 6)} link="/shop?category=Men" linkText="View All →" />

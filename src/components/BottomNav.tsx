@@ -1,5 +1,5 @@
 import { Link, useLocation } from "react-router-dom";
-import { Heart, ShoppingCart, User } from "lucide-react";
+import { Heart, ShoppingCart, User, Film } from "lucide-react";
 import { useStore } from "@/lib/store";
 
 export function BottomNav() {
@@ -36,6 +36,12 @@ export function BottomNav() {
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
         </svg>
         <span className="text-[10px] font-semibold">Shop</span>
+      </Link>
+
+      {/* Reels */}
+      <Link to="/reels" className={tabClass("/reels")}>
+        <Film className="w-6 h-6 mb-0.5" />
+        <span className="text-[10px] font-semibold mt-0.5">Reels</span>
       </Link>
 
       {/* Wishlist */}

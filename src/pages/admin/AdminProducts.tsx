@@ -14,6 +14,7 @@ interface Product {
   stock: number;
   description: string;
   imageUrl: string;
+  videoUrl?: string;
   images?: string[];
   sizes?: string[];
   status: string;
@@ -73,6 +74,7 @@ export default function AdminProducts() {
     setValue('stock', product.stock);
     setValue('description', product.description || '');
     setValue('imageUrl', product.imageUrl || (product.images?.[0] || ''));
+    setValue('videoUrl', product.videoUrl || '');
     setValue('image2', product.images?.[1] || '');
     setValue('image3', product.images?.[2] || '');
     setValue('image4', product.images?.[3] || '');
@@ -103,6 +105,7 @@ export default function AdminProducts() {
         stock: parseInt(data.stock),
         description: data.description || '',
         imageUrl: data.imageUrl || imagesArray[0] || '',
+        videoUrl: data.videoUrl || '',
         images: imagesArray,
         sizes: sizesArray,
         status: data.status || 'Active',
@@ -162,6 +165,7 @@ export default function AdminProducts() {
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
               <input {...register('imageUrl')} placeholder="Image URL 1 (Main)" className="block w-full rounded-xl border-slate-200 shadow-sm focus:border-[#4F46E5] focus:ring-[#4F46E5] sm:text-sm p-3 border font-medium bg-slate-50" />
+              <input {...register('videoUrl')} placeholder="Video URL (For Reels)" className="block w-full rounded-xl border-slate-200 shadow-sm focus:border-[#4F46E5] focus:ring-[#4F46E5] sm:text-sm p-3 border font-medium bg-slate-50" />
               <input {...register('image2')} placeholder="Image URL 2" className="block w-full rounded-xl border-slate-200 shadow-sm focus:border-[#4F46E5] focus:ring-[#4F46E5] sm:text-sm p-3 border font-medium bg-slate-50" />
               <input {...register('image3')} placeholder="Image URL 3" className="block w-full rounded-xl border-slate-200 shadow-sm focus:border-[#4F46E5] focus:ring-[#4F46E5] sm:text-sm p-3 border font-medium bg-slate-50" />
               <input {...register('image4')} placeholder="Image URL 4" className="block w-full rounded-xl border-slate-200 shadow-sm focus:border-[#4F46E5] focus:ring-[#4F46E5] sm:text-sm p-3 border font-medium bg-slate-50" />

@@ -22,6 +22,9 @@ import OrderDetailsPage from './pages/OrderDetailsPage';
 import WishlistPage from './pages/WishlistPage';
 import OrderSuccessPage from './pages/OrderSuccessPage';
 import CategoriesPage from './pages/CategoriesPage';
+import AboutPage from './pages/AboutPage';
+import ContactPage from './pages/ContactPage';
+import ReelsPage from './pages/ReelsPage';
 import Seeder from './pages/Seeder';
 
 // Admin Pages
@@ -108,6 +111,9 @@ export default function App() {
       <Routes>
         <Route path="/" element={<HomePage />} />
         <Route path="/shop" element={<ShopPage />} />
+        <Route path="/contact" element={<ContactPage />} />
+        <Route path="/about" element={<AboutPage />} />
+        <Route path="/reels" element={<ReelsPage />} />
         <Route path="/categories" element={<CategoriesPage />} />
         <Route path="/product/:id" element={<ProductDetailsPage />} />
         <Route path="/cart" element={<CartPage />} />

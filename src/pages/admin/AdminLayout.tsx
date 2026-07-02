@@ -40,7 +40,7 @@ export default function AdminLayout() {
     const unsubscribe = onSnapshot(q, (snapshot) => {
       if (initialLoadRef.current) {
         initialLoadRef.current = false;
-        
+
         const orders: any[] = [];
         let unread = 0;
         snapshot.forEach((doc) => {
@@ -60,7 +60,7 @@ export default function AdminLayout() {
 
       snapshot.docChanges().forEach((change) => {
         const orderData = { id: change.doc.id, ...change.doc.data() } as any;
-        
+
         if (change.type === 'added') {
           updatedOrders.unshift(orderData);
           if (updatedOrders.length > 10) updatedOrders.pop();
@@ -78,7 +78,7 @@ export default function AdminLayout() {
           }
         }
       });
-      
+
       recentOrdersRef.current = updatedOrders;
       unreadCountRef.current = newUnreadCount;
       setRecentOrders([...updatedOrders]);
@@ -99,7 +99,7 @@ export default function AdminLayout() {
         setNotificationsOpen(false);
       }
     };
-    
+
     document.addEventListener('mousedown', handleClickOutside);
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
@@ -122,8 +122,8 @@ export default function AdminLayout() {
 
   // Superadmin bypasses role checks
   const isSuperAdmin = user?.email === 'editztm3@gmail.com';
-  
-  const navItems = allNavItems.filter(item => 
+
+  const navItems = allNavItems.filter(item =>
     isSuperAdmin || (userRole && item.roles.includes(userRole as string))
   );
 
@@ -133,7 +133,7 @@ export default function AdminLayout() {
     { name: 'Orders', path: '/admin/orders', icon: ShoppingCart, exact: false, roles: ['Administrator', 'Manager', 'Support'] },
   ];
 
-  const bottomNavItems = allBottomNavItems.filter(item => 
+  const bottomNavItems = allBottomNavItems.filter(item =>
     isSuperAdmin || (userRole && item.roles.includes(userRole as string))
   );
 
@@ -148,39 +148,38 @@ export default function AdminLayout() {
             <span className="text-xl font-bold tracking-tight text-white">{storeSettings?.storeName || 'Admin Panel'}</span>
           )}
         </div>
-        
+
         <div className="flex-1 overflow-y-auto py-4">
           <nav className="px-3 space-y-1">
             {navItems.map((item) => {
-              const isActive = item.exact 
-                ? location.pathname === item.path 
+              const isActive = item.exact
+                ? location.pathname === item.path
                 : location.pathname.startsWith(item.path);
-                
+
               const Icon = item.icon;
-              
+
               return (
-                <Link 
+                <Link
                   key={item.name}
-                  to={item.path} 
-                  className={`flex items-center px-3 py-2 text-sm font-medium rounded-md transition-colors ${
-                    isActive 
-                      ? 'bg-slate-800 text-white' 
-                      : 'text-slate-300 hover:text-white hover:bg-slate-800'
-                  }`}
+                  to={item.path}
+                  className={`flex items-center px-3 py-2 text-sm font-medium rounded-md transition-colors ${isActive
+                    ? 'bg-slate-800 text-white'
+                    : 'text-slate-300 hover:text-white hover:bg-slate-800'
+                    }`}
                 >
-                  <Icon className={`mr-3 h-5 w-5 ${isActive ? 'text-blue-400' : 'text-slate-400'}`} /> 
+                  <Icon className={`mr-3 h-5 w-5 ${isActive ? 'text-blue-400' : 'text-slate-400'}`} />
                   {item.name}
                 </Link>
               );
             })}
           </nav>
         </div>
-        
+
         <div className="p-4 border-t border-slate-800">
           <Link to="/" className="flex items-center px-3 py-2 text-sm font-medium rounded-md text-slate-400 hover:text-white hover:bg-slate-800 mb-2">
             <ArrowLeft className="mr-3 h-5 w-5" /> Back to Store
           </Link>
-          <button 
+          <button
             onClick={() => signOut(auth)}
             className="w-full flex items-center px-3 py-2 text-sm font-medium rounded-md text-red-400 hover:text-white hover:bg-red-900/50 transition-colors"
           >
@@ -201,10 +200,10 @@ export default function AdminLayout() {
               {navItems.find(item => item.exact ? location.pathname === item.path : location.pathname.startsWith(item.path))?.name || 'Admin'}
             </h1>
           </div>
-          
+
           <div className="flex items-center space-x-4">
             <div className="relative">
-              <button 
+              <button
                 className="notifications-btn relative p-2 text-slate-600 hover:bg-slate-100 rounded-full transition-colors"
                 onClick={() => {
                   setNotificationsOpen(!notificationsOpen);
@@ -218,13 +217,13 @@ export default function AdminLayout() {
                   </span>
                 )}
               </button>
-              
+
               {notificationsOpen && (
                 <div className="notifications-dropdown absolute right-0 mt-2 w-80 bg-white rounded-xl shadow-lg border border-slate-100 overflow-hidden z-50">
                   <div className="p-3 border-b border-slate-100 flex items-center justify-between bg-slate-50">
                     <h3 className="text-sm font-bold text-slate-800">Notifications</h3>
-                    <Link 
-                      to="/admin/orders" 
+                    <Link
+                      to="/admin/orders"
                       onClick={() => setNotificationsOpen(false)}
                       className="text-[11px] font-bold text-[#4F46E5] hover:text-[#4338ca]"
                     >
@@ -243,13 +242,11 @@ export default function AdminLayout() {
                             key={order.id}
                             to={`/admin/orders?id=${order.id}`}
                             onClick={() => setNotificationsOpen(false)}
-                            className={`flex items-start p-3 hover:bg-slate-50 transition-colors ${
-                              order.status === 'Pending' ? 'bg-indigo-50/30' : ''
-                            }`}
+                            className={`flex items-start p-3 hover:bg-slate-50 transition-colors ${order.status === 'Pending' ? 'bg-indigo-50/30' : ''
+                              }`}
                           >
-                            <div className={`w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5 ${
-                              order.status === 'Pending' ? 'bg-[#4F46E5] text-white' : 'bg-slate-100 text-slate-500'
-                            }`}>
+                            <div className={`w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5 ${order.status === 'Pending' ? 'bg-[#4F46E5] text-white' : 'bg-slate-100 text-slate-500'
+                              }`}>
                               <Package className="w-4 h-4" />
                             </div>
                             <div className="ml-3 flex-1">
@@ -260,9 +257,8 @@ export default function AdminLayout() {
                                 {order.shippingAddress?.fullName || 'Customer'} placed an order for ${order.total?.toFixed(2)}
                               </p>
                               <p className="text-[10px] text-slate-400 mt-1 flex items-center">
-                                <span className={`inline-block w-1.5 h-1.5 rounded-full mr-1.5 ${
-                                  order.status === 'Pending' ? 'bg-orange-400' : 'bg-slate-300'
-                                }`}></span>
+                                <span className={`inline-block w-1.5 h-1.5 rounded-full mr-1.5 ${order.status === 'Pending' ? 'bg-orange-400' : 'bg-slate-300'
+                                  }`}></span>
                                 {order.status}
                               </p>
                             </div>
@@ -279,7 +275,7 @@ export default function AdminLayout() {
             </Link>
           </div>
         </header>
-        
+
         <div className="flex-1 overflow-y-auto p-4 md:p-8 bg-[#fafafa]">
           <Outlet />
         </div>
@@ -288,25 +284,24 @@ export default function AdminLayout() {
       {/* Mobile Bottom Navigation */}
       <div className="md:hidden fixed bottom-0 left-0 right-0 bg-white border-t border-slate-200 flex justify-around items-center h-16 z-50 px-2 pb-safe">
         {bottomNavItems.map((item) => {
-          const isActive = item.exact 
-            ? location.pathname === item.path 
+          const isActive = item.exact
+            ? location.pathname === item.path
             : location.pathname.startsWith(item.path);
           const Icon = item.icon;
-          
+
           return (
-            <Link 
+            <Link
               key={item.name}
-              to={item.path} 
-              className={`flex flex-col items-center justify-center w-full h-full space-y-1 ${
-                isActive ? 'text-[#4F46E5]' : 'text-slate-400 hover:text-slate-600'
-              }`}
+              to={item.path}
+              className={`flex flex-col items-center justify-center w-full h-full space-y-1 ${isActive ? 'text-[#4F46E5]' : 'text-slate-400 hover:text-slate-600'
+                }`}
             >
               <Icon className="w-5 h-5" strokeWidth={isActive ? 2.5 : 2} />
               <span className="text-[10px] font-medium">{item.name}</span>
             </Link>
           );
         })}
-        <button 
+        <button
           onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
           className={`flex flex-col items-center justify-center w-full h-full space-y-1 ${mobileMenuOpen ? 'text-[#4F46E5]' : 'text-slate-400 hover:text-slate-600'}`}
         >
@@ -329,39 +324,45 @@ export default function AdminLayout() {
                 <X className="w-5 h-5" />
               </button>
             </div>
-            
+
             <div className="flex-1 overflow-y-auto py-4">
               <nav className="px-4 space-y-2">
                 {navItems.map((item) => {
-                  const isActive = item.exact 
-                    ? location.pathname === item.path 
+                  const isActive = item.exact
+                    ? location.pathname === item.path
                     : location.pathname.startsWith(item.path);
-                    
+
                   const Icon = item.icon;
-                  
+
                   return (
-                    <Link 
+                    <Link
                       key={item.name}
-                      to={item.path} 
+                      to={item.path}
                       onClick={() => setMobileMenuOpen(false)}
-                      className={`flex items-center px-4 py-3.5 rounded-xl transition-colors ${
-                        isActive 
-                          ? 'bg-slate-800/80 text-white font-semibold' 
-                          : 'text-slate-400 hover:text-white hover:bg-slate-800/50 font-medium'
-                      }`}
+                      className={`flex items-center px-4 py-3.5 rounded-xl transition-colors ${isActive
+                        ? 'bg-slate-800/80 text-white font-semibold'
+                        : 'text-slate-400 hover:text-white hover:bg-slate-800/50 font-medium'
+                        }`}
                     >
-                      <Icon className={`mr-4 h-5 w-5 ${isActive ? 'text-white' : 'text-slate-400'}`} /> 
+                      <Icon className={`mr-4 h-5 w-5 ${isActive ? 'text-white' : 'text-slate-400'}`} />
                       <span className="text-[15px]">{item.name}</span>
                     </Link>
                   );
                 })}
               </nav>
             </div>
-            
+
             <div className="p-4 border-t border-slate-800">
-              <button 
+              <Link
+                to="/"
+                onClick={() => setMobileMenuOpen(false)}
+                className="w-full flex items-center px-8 py-3.5 text-[15px] font-medium rounded-xl text-slate-400 hover:text-white hover:bg-slate-800/50 transition-colors mb-2"
+              >
+                <ArrowLeft className="mr-4 h-5 w-5" /> Back to Store
+              </Link>
+              <button
                 onClick={() => { setMobileMenuOpen(false); signOut(auth); }}
-                className="w-full flex items-center px-8 py-3.5 text-[15px] font-medium rounded-xl text-slate-400 hover:text-white hover:bg-slate-800/50 transition-colors"
+                className="w-full flex items-center px-8 py-3.5 text-[15px] font-medium rounded-xl text-red-400 hover:text-white hover:bg-red-900/50 transition-colors"
               >
                 <LogOut className="mr-4 h-5 w-5" /> Logout
               </button>
