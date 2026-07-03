@@ -3,7 +3,7 @@ import { ShoppingCart, Heart, User, LogOut, Search, Menu, X, ShieldCheck, Bell, 
 import { useStore } from '@/lib/store';
 import { auth, db } from '@/lib/firebase';
 import { signOut } from 'firebase/auth';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { collection, query, where, orderBy, onSnapshot, updateDoc, doc } from 'firebase/firestore';
 
 export function Navbar() {
@@ -11,6 +11,9 @@ export function Navbar() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [notifications, setNotifications] = useState<any[]>([]);
   const [isNotificationsOpen, setIsNotificationsOpen] = useState(false);
+  const [mobileSearchOpen, setMobileSearchOpen] = useState(false);
+  const [mobileSearchQuery, setMobileSearchQuery] = useState('');
+  const mobileSearchRef = useRef<HTMLInputElement>(null);
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -75,41 +78,69 @@ export function Navbar() {
   const cartItemsCount = cart.reduce((acc, item) => acc + item.quantity, 0);
 
   return (
-    <nav className="bg-white shadow-sm border-b sticky top-0 z-50">
+    <>
+    <nav className="bg-white/70 backdrop-blur-xl shadow-[0_8px_32px_rgba(0,0,0,0.04)] border-b border-white/80 sticky top-0 z-50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex justify-between h-16 items-center">
+        <div className="relative flex justify-between h-20 items-center">
           
-          <div className="flex items-center flex-1 md:flex-none">
+          {/* Left: hamburger (mobile) */}
+          <div className="flex items-center md:flex-none relative z-10">
             {/* Mobile Menu Button */}
             <button onClick={() => setIsMobileMenuOpen(true)} className="text-slate-500 hover:text-slate-900 md:hidden mr-3 -ml-1">
               <Menu className="h-6 w-6" />
             </button>
 
-            <Link to="/" className="flex-shrink-0 flex items-center">
+            {/* Desktop logo + nav links */}
+            <Link to="/" className="hidden md:flex flex-shrink-0 items-center">
               {storeSettings?.logoUrl ? (
-                <img src={storeSettings.logoUrl} alt={storeSettings.storeName || 'Shop'} className="h-8 max-w-[120px] object-contain" />
+                <img src={storeSettings.logoUrl} alt={storeSettings.storeName || 'Shop'} className="h-14 max-w-[160px] object-contain" />
               ) : (
-                <span className="font-bold text-2xl tracking-tight text-slate-900">{storeSettings?.storeName || 'Shoply.'}</span>
+                <img
+                  src="https://res.cloudinary.com/dcldlvuib/image/upload/v1783062854/ChatGPT_Image_Jul_3_2026_12_41_53_PM_x2cays.png"
+                  alt="SwiftStore"
+                  className="h-14 w-auto object-contain"
+                />
               )}
             </Link>
             
-            <div className="hidden lg:ml-8 lg:flex lg:items-center lg:space-x-3">
-              <Link to="/" className={`px-4 py-2 rounded-full text-[14px] font-semibold transition-colors ${location.pathname === '/' ? 'bg-blue-600 text-white' : 'bg-slate-50 text-slate-700 hover:bg-slate-100'}`}>Home</Link>
-              <Link to="/shop" className={`px-4 py-2 rounded-full text-[14px] font-semibold transition-colors ${location.pathname === '/shop' ? 'bg-blue-600 text-white' : 'bg-slate-50 text-slate-700 hover:bg-slate-100'}`}>Shop</Link>
-              <Link to="/categories" className={`px-4 py-2 rounded-full text-[14px] font-semibold transition-colors ${location.pathname === '/categories' ? 'bg-blue-600 text-white' : 'bg-slate-50 text-slate-700 hover:bg-slate-100'}`}>Categories</Link>
-              <Link to="/about" className={`px-4 py-2 rounded-full text-[14px] font-semibold transition-colors ${location.pathname === '/about' ? 'bg-blue-600 text-white' : 'bg-slate-50 text-slate-700 hover:bg-slate-100'}`}>About</Link>
-              <Link to="/contact" className={`px-4 py-2 rounded-full text-[14px] font-semibold transition-colors ${location.pathname === '/contact' ? 'bg-blue-600 text-white' : 'bg-slate-50 text-slate-700 hover:bg-slate-100'}`}>Contact</Link>
+            <div className="hidden lg:ml-8 lg:flex lg:items-center lg:space-x-1.5">
+              <Link to="/" className={`px-3.5 py-1.5 rounded-full text-[13px] font-semibold transition-all ${location.pathname === '/' ? 'bg-blue-600 text-white shadow-sm' : 'bg-transparent text-slate-600 hover:bg-slate-100 hover:text-slate-900'}`}>Home</Link>
+              <Link to="/shop" className={`px-3.5 py-1.5 rounded-full text-[13px] font-semibold transition-all ${location.pathname === '/shop' ? 'bg-blue-600 text-white shadow-sm' : 'bg-transparent text-slate-600 hover:bg-slate-100 hover:text-slate-900'}`}>Shop</Link>
+              <Link to="/categories" className={`px-3.5 py-1.5 rounded-full text-[13px] font-semibold transition-all ${location.pathname === '/categories' ? 'bg-blue-600 text-white shadow-sm' : 'bg-transparent text-slate-600 hover:bg-slate-100 hover:text-slate-900'}`}>Categories</Link>
+              <Link to="/about" className={`px-3.5 py-1.5 rounded-full text-[13px] font-semibold transition-all ${location.pathname === '/about' ? 'bg-blue-600 text-white shadow-sm' : 'bg-transparent text-slate-600 hover:bg-slate-100 hover:text-slate-900'}`}>About</Link>
+              <Link to="/contact" className={`px-3.5 py-1.5 rounded-full text-[13px] font-semibold transition-all ${location.pathname === '/contact' ? 'bg-blue-600 text-white shadow-sm' : 'bg-transparent text-slate-600 hover:bg-slate-100 hover:text-slate-900'}`}>Contact</Link>
             </div>
           </div>
-          
-          <div className="flex items-center space-x-2 md:space-x-4">
+
+          {/* Mobile: Centered logo (absolute) */}
+          <Link to="/" className="md:hidden absolute inset-0 flex items-center justify-center pointer-events-none">
+            {storeSettings?.logoUrl ? (
+              <img src={storeSettings.logoUrl} alt={storeSettings.storeName || 'Shop'} className="h-14 w-auto max-w-[140px] object-contain pointer-events-auto" />
+            ) : (
+              <img
+                src="https://res.cloudinary.com/dcldlvuib/image/upload/v1783062854/ChatGPT_Image_Jul_3_2026_12_41_53_PM_x2cays.png"
+                alt="SwiftStore"
+                className="h-14 w-auto max-w-[140px] object-contain pointer-events-auto"
+              />
+            )}
+          </Link>
+
+          <div className="flex items-center space-x-2 md:space-x-4 relative z-10">
             <div className="hidden lg:flex items-center bg-slate-50 hover:bg-slate-100 transition-colors rounded-full px-4 py-2.5">
               <Search className="h-[18px] w-[18px] text-slate-500" />
               <input type="text" placeholder="Search products..." className="bg-transparent border-none focus:outline-none focus:ring-0 text-[14px] ml-2 w-48 xl:w-64 placeholder:text-slate-400 text-slate-700" />
             </div>
 
             <div className="flex items-center space-x-2 md:space-x-3">
-              <button className="text-slate-600 hover:text-slate-900 lg:hidden">
+              <button
+                className="text-slate-600 hover:text-slate-900 lg:hidden"
+                onClick={() => {
+                  setMobileSearchOpen(v => {
+                    if (!v) setTimeout(() => mobileSearchRef.current?.focus(), 50);
+                    return !v;
+                  });
+                }}
+              >
                 <Search className="h-5 w-5" />
               </button>
 
@@ -141,7 +172,7 @@ export function Navbar() {
                   )}
                 </button>
                 {user && isNotificationsOpen && (
-                  <div className="absolute right-0 mt-2 w-[300px] md:w-80 bg-white rounded-xl shadow-lg border border-slate-100 overflow-hidden z-50">
+                  <div className="absolute right-0 mt-2 w-[300px] md:w-80 bg-white/90 backdrop-blur-2xl rounded-xl shadow-[0_8px_32px_rgba(0,0,0,0.12)] border border-white/80 overflow-hidden z-50">
                     <div className="p-4 border-b border-slate-100 bg-slate-50 flex justify-between items-center">
                       <h3 className="font-bold text-slate-900">Notifications</h3>
                       <span className="text-xs text-slate-500">{notifications.length} total</span>
@@ -206,7 +237,52 @@ export function Navbar() {
           </div>
         </div>
       </div>
-      
+
+      {/* ── Mobile Search Bar (slide down) ── */}
+      <div
+        className={`lg:hidden overflow-hidden transition-all duration-300 ease-in-out border-t border-white/50 bg-white/70 backdrop-blur-xl ${
+          mobileSearchOpen ? 'max-h-20 opacity-100' : 'max-h-0 opacity-0'
+        }`}
+      >
+        <form
+          className="flex items-center gap-2 px-4 py-3"
+          onSubmit={(e) => {
+            e.preventDefault();
+            if (mobileSearchQuery.trim()) {
+              navigate(`/shop?search=${encodeURIComponent(mobileSearchQuery.trim())}`);
+              setMobileSearchOpen(false);
+              setMobileSearchQuery('');
+            }
+          }}
+        >
+          <Search className="h-4 w-4 text-slate-400 flex-shrink-0" />
+          <input
+            ref={mobileSearchRef}
+            type="text"
+            value={mobileSearchQuery}
+            onChange={(e) => setMobileSearchQuery(e.target.value)}
+            placeholder="Search products..."
+            className="flex-1 bg-transparent border-none focus:outline-none focus:ring-0 text-sm text-slate-800 placeholder:text-slate-400"
+          />
+          {mobileSearchQuery && (
+            <button
+              type="button"
+              onClick={() => setMobileSearchQuery('')}
+              className="text-slate-400 hover:text-slate-600"
+            >
+              <X className="h-4 w-4" />
+            </button>
+          )}
+          <button
+            type="submit"
+            className="bg-slate-900 text-white text-xs font-bold px-4 py-1.5 rounded-full hover:bg-slate-700 transition-colors flex-shrink-0"
+          >
+            Search
+          </button>
+        </form>
+      </div>
+    </nav>
+
       {/* Mobile Drawer Overlay */}
       {isMobileMenuOpen && (
         <div 
@@ -217,7 +293,7 @@ export function Navbar() {
 
       {/* Mobile Drawer Menu */}
       <div 
-        className={`fixed inset-y-0 left-0 z-[70] w-4/5 max-w-sm bg-white shadow-2xl transform transition-transform duration-300 ease-in-out md:hidden flex flex-col ${
+        className={`fixed inset-y-0 left-0 z-[70] w-4/5 max-w-sm bg-white/90 backdrop-blur-3xl shadow-[4px_0_24px_rgba(0,0,0,0.1)] border-r border-white/80 transform transition-transform duration-300 ease-in-out md:hidden flex flex-col ${
           isMobileMenuOpen ? 'translate-x-0' : '-translate-x-full'
         }`}
       >
@@ -225,7 +301,11 @@ export function Navbar() {
           {storeSettings?.logoUrl ? (
             <img src={storeSettings.logoUrl} alt={storeSettings.storeName || 'Shop'} className="h-8 max-w-[150px] object-contain" />
           ) : (
-            <span className="font-bold text-xl tracking-tight text-slate-900">{storeSettings?.storeName || 'SwiftStore'}</span>
+            <img
+              src="https://res.cloudinary.com/dcldlvuib/image/upload/v1783062854/ChatGPT_Image_Jul_3_2026_12_41_53_PM_x2cays.png"
+              alt="SwiftStore"
+              className="h-8 w-auto object-contain"
+            />
           )}
           <button onClick={() => setIsMobileMenuOpen(false)} className="text-slate-500 hover:text-slate-900 bg-[#F4F6F8] p-2 rounded-full transition-colors">
             <X className="h-5 w-5" />
@@ -300,6 +380,6 @@ export function Navbar() {
           </div>
         </div>
       </div>
-    </nav>
+    </>
   );
 }

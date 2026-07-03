@@ -22,6 +22,7 @@ import OrderDetailsPage from './pages/OrderDetailsPage';
 import WishlistPage from './pages/WishlistPage';
 import OrderSuccessPage from './pages/OrderSuccessPage';
 import CategoriesPage from './pages/CategoriesPage';
+import CategoryPage from './pages/CategoryPage';
 import AboutPage from './pages/AboutPage';
 import ContactPage from './pages/ContactPage';
 import ReelsPage from './pages/ReelsPage';
@@ -102,9 +103,12 @@ function SettingsSync() {
   return null;
 }
 
+import ScrollToTop from './components/ScrollToTop';
+
 export default function App() {
   return (
     <BrowserRouter>
+      <ScrollToTop />
       <CartSync />
       <SettingsSync />
       <LoginPopup />
@@ -115,6 +119,7 @@ export default function App() {
         <Route path="/about" element={<AboutPage />} />
         <Route path="/reels" element={<ReelsPage />} />
         <Route path="/categories" element={<CategoriesPage />} />
+        <Route path="/category/:categoryName" element={<CategoryPage />} />
         <Route path="/product/:id" element={<ProductDetailsPage />} />
         <Route path="/cart" element={<CartPage />} />
         <Route path="/checkout" element={<CustomerRoute><CheckoutPage /></CustomerRoute>} />

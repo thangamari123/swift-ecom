@@ -62,7 +62,7 @@ export default function CategoriesPage() {
             <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3">
               {categories.map((category) => (
                 <Link
-                  to={`/shop?category=${encodeURIComponent(category.name)}`}
+                  to={`/category/${encodeURIComponent(category.name)}`}
                   key={category.id}
                   className="group bg-white rounded-2xl border border-slate-100 p-2 shadow-sm hover:shadow-md transition-all flex flex-col items-center"
                 >

@@ -36,11 +36,11 @@ export function Footer() {
             <div>
               <h4 className="font-bold text-slate-900 mb-4 text-[14px]">Shop</h4>
               <ul className="space-y-3">
-                <li><Link to="/shop?category=Men" className="text-[13px] text-slate-600 hover:text-slate-900">Men</Link></li>
-                <li><Link to="/shop?category=Women" className="text-[13px] text-slate-600 hover:text-slate-900">Women</Link></li>
-                <li><Link to="/shop?category=Kids" className="text-[13px] text-slate-600 hover:text-slate-900">Kids</Link></li>
-                <li><Link to="/shop?category=Watches" className="text-[13px] text-slate-600 hover:text-slate-900">Watches</Link></li>
-                <li><Link to="/shop?category=Home" className="text-[13px] text-slate-600 hover:text-slate-900">Home</Link></li>
+                <li><Link to="/category/Men" className="text-[13px] text-slate-600 hover:text-slate-900">Men</Link></li>
+                <li><Link to="/category/Women" className="text-[13px] text-slate-600 hover:text-slate-900">Women</Link></li>
+                <li><Link to="/category/Kids" className="text-[13px] text-slate-600 hover:text-slate-900">Kids</Link></li>
+                <li><Link to="/category/Watch" className="text-[13px] text-slate-600 hover:text-slate-900">Watches</Link></li>
+                <li><Link to="/category/Home%20Decorate" className="text-[13px] text-slate-600 hover:text-slate-900">Home</Link></li>
               </ul>
             </div>
 
@@ -133,11 +133,11 @@ export function Footer() {
             <div>
               <h4 className="font-bold text-slate-900 mb-4">Shop</h4>
               <ul className="space-y-4">
-                <li><Link to="/shop?category=Men" className="text-slate-600 hover:text-slate-900">Men</Link></li>
-                <li><Link to="/shop?category=Women" className="text-slate-600 hover:text-slate-900">Women</Link></li>
-                <li><Link to="/shop?category=Kids" className="text-slate-600 hover:text-slate-900">Kids</Link></li>
-                <li><Link to="/shop?category=Watches" className="text-slate-600 hover:text-slate-900">Watches</Link></li>
-                <li><Link to="/shop?category=Home" className="text-slate-600 hover:text-slate-900">Home</Link></li>
+                <li><Link to="/category/Men" className="text-slate-600 hover:text-slate-900">Men</Link></li>
+                <li><Link to="/category/Women" className="text-slate-600 hover:text-slate-900">Women</Link></li>
+                <li><Link to="/category/Kids" className="text-slate-600 hover:text-slate-900">Kids</Link></li>
+                <li><Link to="/category/Watch" className="text-slate-600 hover:text-slate-900">Watches</Link></li>
+                <li><Link to="/category/Home%20Decorate" className="text-slate-600 hover:text-slate-900">Home</Link></li>
               </ul>
             </div>
             {/* Customer Service */}

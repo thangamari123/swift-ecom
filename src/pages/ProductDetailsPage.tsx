@@ -518,7 +518,7 @@ export default function ProductDetailsPage() {
           <div className="border-t border-slate-100 pt-12 pb-20 lg:px-8 px-4">
             <div className="flex items-center justify-between mb-6">
               <h2 className="text-2xl font-bold text-slate-900">Related Products</h2>
-              <Link to={`/shop?category=${product.category}`} className="text-sm font-semibold text-indigo-600 hover:text-indigo-700">
+              <Link to={`/category/${product.category}`} className="text-sm font-semibold text-indigo-600 hover:text-indigo-700">
                 View All
               </Link>
             </div>

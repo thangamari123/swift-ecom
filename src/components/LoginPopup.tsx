@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { useStore } from '@/lib/store';
 import { auth } from '@/lib/firebase';
 import { signInWithEmailAndPassword, createUserWithEmailAndPassword, GoogleAuthProvider, signInWithPopup } from 'firebase/auth';
-import { X, Loader2, AlertCircle } from 'lucide-react';
+import { X, Loader2, AlertCircle, KeyRound } from 'lucide-react';
 import { toast } from 'react-toastify';
 
 export function LoginPopup() {
@@ -71,50 +71,53 @@ export function LoginPopup() {
   };
 
   return (
-    <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/50 p-4">
-      <div className="bg-white rounded-2xl p-6 w-full max-w-sm relative shadow-xl">
+    <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
+      <div className="bg-white/95 backdrop-blur-2xl border border-white/60 rounded-[32px] p-8 w-full max-w-sm relative shadow-[0_20px_60px_rgba(0,0,0,0.15)]">
         <button 
           onClick={() => setLoginPopupOpen(false)}
-          className="absolute top-4 right-4 text-slate-400 hover:text-slate-600"
+          className="absolute top-5 right-5 text-slate-400 hover:text-slate-900 transition-colors bg-slate-50 hover:bg-slate-100 p-2 rounded-full"
           disabled={loading}
         >
-          <X className="w-5 h-5" />
+          <X className="w-4 h-4" />
         </button>
 
-        <div className="mb-6 text-center">
-          <h2 className="text-2xl font-bold text-slate-900 mb-2">Login Required</h2>
-          <p className="text-sm text-slate-600">
-            Please login or create an account to continue shopping.
+        <div className="mb-8 text-center flex flex-col items-center">
+          <div className="w-12 h-12 bg-slate-900 text-white rounded-full flex items-center justify-center mb-4 shadow-md">
+            <KeyRound className="w-5 h-5" strokeWidth={2.5} />
+          </div>
+          <h2 className="text-2xl font-serif italic text-slate-900 mb-1">Welcome Back</h2>
+          <p className="text-xs text-slate-500 uppercase tracking-widest font-medium">
+            {isRegister ? "Create your account" : "Sign in to continue"}
           </p>
         </div>
 
         {error && (
-          <div className="mb-4 p-3 bg-red-50 border border-red-200 text-red-600 rounded-xl text-sm flex items-start gap-2">
-            <AlertCircle className="w-5 h-5 flex-shrink-0 mt-0.5" />
+          <div className="mb-6 p-3 bg-red-50/80 border border-red-100 text-red-600 rounded-2xl text-xs flex items-start gap-2">
+            <AlertCircle className="w-4 h-4 flex-shrink-0 mt-0.5" />
             <p>{error}</p>
           </div>
         )}
 
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
-            <label className="block text-sm font-medium text-slate-700 mb-1">Email</label>
             <input
               type="email"
               required
+              placeholder="Email address"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              className="w-full px-4 py-2 border border-slate-200 rounded-xl focus:ring-[#4F46E5] focus:border-[#4F46E5] outline-none"
+              className="w-full px-5 py-3.5 bg-slate-50/80 border-transparent rounded-2xl text-sm focus:ring-2 focus:ring-slate-900 focus:bg-white outline-none transition-all placeholder:text-slate-400"
               disabled={loading}
             />
           </div>
           <div>
-            <label className="block text-sm font-medium text-slate-700 mb-1">Password</label>
             <input
               type="password"
               required
+              placeholder="Password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              className="w-full px-4 py-2 border border-slate-200 rounded-xl focus:ring-[#4F46E5] focus:border-[#4F46E5] outline-none"
+              className="w-full px-5 py-3.5 bg-slate-50/80 border-transparent rounded-2xl text-sm focus:ring-2 focus:ring-slate-900 focus:bg-white outline-none transition-all placeholder:text-slate-400"
               disabled={loading}
             />
           </div>
@@ -122,19 +125,19 @@ export function LoginPopup() {
           <button
             type="submit"
             disabled={loading}
-            className="w-full py-3 bg-[#4F46E5] text-white rounded-xl font-bold hover:bg-[#4338CA] transition-colors disabled:opacity-50 flex items-center justify-center gap-2"
+            className="w-full py-4 mt-2 bg-slate-900 text-white rounded-2xl font-semibold text-sm hover:bg-slate-800 transition-all disabled:opacity-50 flex items-center justify-center gap-2 shadow-lg shadow-slate-900/20"
           >
-            {loading && <Loader2 className="w-5 h-5 animate-spin" />}
-            {loading ? 'Processing...' : isRegister ? 'Register' : 'Login'}
+            {loading && <Loader2 className="w-4 h-4 animate-spin" />}
+            {loading ? 'Processing...' : isRegister ? 'Create Account' : 'Sign In'}
           </button>
         </form>
 
-        <div className="mt-4 relative">
+        <div className="mt-8 relative">
           <div className="absolute inset-0 flex items-center">
-            <div className="w-full border-t border-slate-200"></div>
+            <div className="w-full border-t border-slate-100"></div>
           </div>
-          <div className="relative flex justify-center text-sm">
-            <span className="px-2 bg-white text-slate-500">Or continue with</span>
+          <div className="relative flex justify-center text-[11px] uppercase tracking-wider font-semibold text-slate-400">
+            <span className="px-4 bg-white/95">Or Continue With</span>
           </div>
         </div>
 
@@ -142,12 +145,12 @@ export function LoginPopup() {
           type="button"
           onClick={handleGoogleLogin}
           disabled={loading}
-          className="mt-4 w-full py-3 bg-white border border-slate-200 text-slate-700 rounded-xl font-bold hover:bg-slate-50 transition-colors disabled:opacity-50 flex items-center justify-center gap-2"
+          className="mt-6 w-full py-3.5 bg-white border border-slate-200 text-slate-700 rounded-2xl font-semibold text-sm hover:bg-slate-50 hover:shadow-sm transition-all disabled:opacity-50 flex items-center justify-center gap-2"
         >
           {loading ? (
-            <Loader2 className="w-5 h-5 animate-spin" />
+            <Loader2 className="w-4 h-4 animate-spin" />
           ) : (
-            <svg className="w-5 h-5" viewBox="0 0 24 24">
+            <svg className="w-4 h-4" viewBox="0 0 24 24">
               <path
                 fill="currentColor"
                 d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"
@@ -169,16 +172,20 @@ export function LoginPopup() {
           Google
         </button>
 
-        <div className="mt-4 text-center">
+        <div className="mt-8 text-center">
           <button
             onClick={() => {
               setIsRegister(!isRegister);
               setError(null);
             }}
             disabled={loading}
-            className="text-sm text-[#4F46E5] font-medium hover:underline disabled:opacity-50"
+            className="text-xs text-slate-500 font-medium hover:text-slate-900 transition-colors disabled:opacity-50"
           >
-            {isRegister ? 'Already have an account? Login' : "Don't have an account? Register"}
+            {isRegister ? (
+              <span>Already have an account? <span className="text-slate-900 underline underline-offset-2">Sign in</span></span>
+            ) : (
+              <span>Don't have an account? <span className="text-slate-900 underline underline-offset-2">Register</span></span>
+            )}
           </button>
         </div>
       </div>

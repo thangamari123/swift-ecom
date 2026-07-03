@@ -26,13 +26,34 @@ export default function WishlistPage() {
       }
 
       try {
-        const productPromises = wishlist.map(id => getDoc(doc(db, 'products', id)));
+        // Fetch storefront config for Flash Sale products that might not be in the products collection
+        const storefrontDoc = await getDoc(doc(db, 'storefront', 'homepage'));
+        const storefrontData = storefrontDoc.exists() ? storefrontDoc.data() : null;
+        const flashSaleProducts = storefrontData?.flashSale?.products || [];
+
+        const productPromises = wishlist.map(async (id) => {
+          // Check standard products collection
+          const productDoc = await getDoc(doc(db, 'products', id));
+          if (productDoc.exists()) {
+             return { id: productDoc.id, ...productDoc.data() };
+          }
+          
+          // Fallback to flash sale array
+          const flashProd = flashSaleProducts.find((p: any) => p.id === id || p.id === Number(id));
+          if (flashProd) {
+             return {
+                id: flashProd.id,
+                name: flashProd.name,
+                price: flashProd.salePrice || flashProd.originalPrice || 0,
+                imageUrl: flashProd.image || flashProd.imageUrl,
+             };
+          }
+          
+          return null; // Product completely missing
+        });
+
         const docs = await Promise.all(productPromises);
-        const fetchedProducts = docs
-          .filter(d => d.exists())
-          .map(d => ({ id: d.id, ...d.data() }));
-        
-        setProducts(fetchedProducts);
+        setProducts(docs.filter(p => p !== null));
       } catch (e) {
         console.error("Error fetching wishlist", e);
         toast.error('Failed to load wishlist');

@@ -1,5 +1,21 @@
 @import "tailwindcss";
 
+@theme {
+  --font-serif: "Playfair Display", ui-serif, Georgia, Cambria, "Times New Roman", Times, serif;
+  
+  --animate-marquee: marquee 30s linear infinite;
+  @keyframes marquee {
+    0% { transform: translateX(0%); }
+    100% { transform: translateX(-50%); }
+  }
+}
+
+@layer base {
+  h1, h2, h3, h4, h5, h6 {
+    font-family: var(--font-serif);
+  }
+}
+
 /* Hide scrollbar globally for overflow-x scroll containers */
 .hide-scrollbar::-webkit-scrollbar {
   display: none;

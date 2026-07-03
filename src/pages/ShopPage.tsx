@@ -56,6 +56,8 @@ export default function ShopPage() {
     let result = products.filter((product) => {
       if (categoryFilter && product.category?.trim() !== categoryFilter.trim()) return false;
       if (maxPriceFilter && product.price > Number(maxPriceFilter)) return false;
+      if (searchParams.get("trending") === "true" && !product.trending) return false;
+      if (searchParams.get("newArrival") === "true" && !product.newArrival) return false;
       if (searchQuery && !product.name.toLowerCase().includes(searchQuery.toLowerCase()) && !(product.description && product.description.toLowerCase().includes(searchQuery.toLowerCase()))) return false;
       return true;
     });
