@@ -7,7 +7,7 @@ import { Footer } from '@/components/Footer';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import { useStore } from '@/lib/store';
 import { toast } from 'react-toastify';
-import { Heart, ChevronLeft, Share2, Star } from 'lucide-react';
+import { Heart, ChevronLeft, Share2, Star, ShoppingCart } from 'lucide-react';
 
 interface Product {
   id: string;
@@ -34,7 +34,8 @@ export default function ProductDetailsPage() {
   const navigate = useNavigate();
   const [product, setProduct] = useState<Product | null>(null);
   const [loading, setLoading] = useState(true);
-  const { addToCart, toggleWishlist, wishlist, user, requireAuth } = useStore();
+  const { addToCart, toggleWishlist, wishlist, user, requireAuth, cart } = useStore();
+  const cartItemsCount = cart.reduce((total, item) => total + item.quantity, 0);
   const [quantity, setQuantity] = useState(1);
   const [selectedColor, setSelectedColor] = useState(0);
   const [activeImage, setActiveImage] = useState(0);
@@ -226,31 +227,40 @@ export default function ProductDetailsPage() {
     : '4.8';
 
   return (
-    <div className="min-h-screen bg-white pb-20 md:pb-0">
+    <div className="min-h-screen bg-white md:pb-0">
       <div className="hidden md:block">
         <Navbar />
       </div>
 
-      <main className="max-w-md mx-auto md:max-w-7xl relative">
-        {/* Mobile Header */}
-        <div className="md:hidden px-4 py-4 flex items-center justify-between sticky top-0 bg-white z-20">
-          <button onClick={() => navigate(-1)} className="p-2 -ml-2 text-slate-700">
+      <main className="max-w-md mx-auto md:max-w-7xl relative pb-24 md:pb-0">
+        {/* Mobile Header (Floating) */}
+        <div className="md:hidden absolute top-0 left-0 right-0 px-4 py-4 flex items-center justify-between z-20 pointer-events-none">
+          <button onClick={() => navigate(-1)} className="w-10 h-10 bg-white/80 backdrop-blur-md rounded-full flex items-center justify-center shadow-sm text-slate-700 pointer-events-auto">
             <ChevronLeft className="w-6 h-6" />
           </button>
-          <div className="flex items-center space-x-2">
-            <button className="p-2 text-slate-700">
+          <div className="flex items-center space-x-3 pointer-events-auto">
+            <button className="w-10 h-10 bg-white/80 backdrop-blur-md rounded-full flex items-center justify-center shadow-sm text-slate-700">
               <Share2 className="w-5 h-5" />
             </button>
-            <button onClick={() => requireAuth(() => toggleWishlist(product.id))} className="p-2 text-slate-700 relative">
+            <button onClick={() => requireAuth(() => toggleWishlist(product.id))} className="w-10 h-10 bg-white/80 backdrop-blur-md rounded-full flex items-center justify-center shadow-sm text-slate-700 relative">
               <Heart className={`w-5 h-5 ${isWishlisted ? 'fill-red-500 text-red-500' : ''}`} />
             </button>
+            <Link to="/cart" className="w-10 h-10 bg-white/80 backdrop-blur-md rounded-full flex items-center justify-center shadow-sm text-slate-700 relative">
+              <ShoppingCart className="w-5 h-5" />
+              {cartItemsCount > 0 && (
+                <span className="absolute -top-1 -right-1 bg-indigo-600 text-white text-[10px] font-bold w-4 h-4 rounded-full flex items-center justify-center border border-white">
+                  {cartItemsCount}
+                </span>
+              )}
+            </Link>
           </div>
         </div>
 
         <div className="lg:grid lg:grid-cols-2 lg:gap-x-8 xl:gap-x-16 lg:px-8 lg:py-12">
           {/* Image Section */}
           <div className="flex flex-col">
-            <div className="aspect-square w-full bg-[#f8f9fa] flex items-center justify-center p-8 md:rounded-2xl">
+            {/* Desktop Image */}
+            <div className="hidden md:flex aspect-square w-full bg-[#f8f9fa] items-center justify-center p-8 rounded-2xl">
               <img
                 src={images[activeImage]}
                 alt={product.name}
@@ -259,13 +269,41 @@ export default function ProductDetailsPage() {
               />
             </div>
             
-            {/* Image Gallery */}
-            <div className="flex gap-4 overflow-x-auto px-4 mt-4 pb-2 hide-scrollbar">
+            {/* Mobile Image Carousel */}
+            <div 
+              className="md:hidden w-full aspect-[4/5] bg-[#f8f9fa] flex overflow-x-auto snap-x snap-mandatory hide-scrollbar relative"
+              onScroll={(e) => {
+                const scrollLeft = (e.target as HTMLDivElement).scrollLeft;
+                const width = (e.target as HTMLDivElement).offsetWidth;
+                setActiveImage(Math.round(scrollLeft / width));
+              }}
+            >
+              {images.map((img, idx) => (
+                <div key={idx} className="w-full flex-shrink-0 snap-center flex items-center justify-center p-4 pt-16">
+                  <img
+                    src={img}
+                    alt={`${product.name} ${idx + 1}`}
+                    className="w-full h-full object-contain mix-blend-multiply"
+                    referrerPolicy="no-referrer"
+                  />
+                </div>
+              ))}
+            </div>
+            
+            {/* Mobile Dots */}
+            <div className="md:hidden flex justify-center gap-1.5 mt-3 mb-1">
+              {images.map((_, idx) => (
+                <div key={idx} className={`h-1.5 rounded-full transition-all duration-300 ${idx === activeImage ? 'w-4 bg-slate-800' : 'w-1.5 bg-slate-300'}`} />
+              ))}
+            </div>
+            
+            {/* Desktop Image Gallery */}
+            <div className="hidden md:flex gap-4 overflow-x-auto px-4 mt-4 pb-2 hide-scrollbar">
               {images.map((img, idx) => (
                 <button 
                   key={idx}
                   onClick={() => setActiveImage(idx)}
-                  className={`w-16 h-16 rounded-xl bg-[#f8f9fa] flex-shrink-0 flex items-center justify-center p-2 border-2 ${activeImage === idx ? 'border-blue-600' : 'border-transparent'}`}
+                  className={`w-16 h-16 rounded-xl bg-[#f8f9fa] flex-shrink-0 flex items-center justify-center p-2 border-2 ${activeImage === idx ? 'border-slate-900' : 'border-transparent'}`}
                 >
                   <img src={img} alt={`Gallery ${idx}`} className="w-full h-full object-contain mix-blend-multiply" referrerPolicy="no-referrer" />
                 </button>
@@ -273,47 +311,47 @@ export default function ProductDetailsPage() {
             </div>
           </div>
 
-          <div className="px-4 mt-6 sm:px-0 lg:mt-0">
-            {/* Title & Rating */}
-            <h1 className="text-xl md:text-3xl font-bold tracking-tight text-slate-900">{product.name}</h1>
-            <div className="mt-2 flex items-center space-x-2">
-              <div className="flex space-x-0.5">
-                {[1, 2, 3, 4, 5].map((star) => (
-                  <svg key={star} className="w-3.5 h-3.5 text-[#ffc107] fill-current" viewBox="0 0 24 24">
-                    <path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z" />
-                  </svg>
-                ))}
+          <div className="px-4 mt-5 sm:px-0 lg:mt-0">
+            {/* Brand (Mock) & Ratings */}
+            <div className="flex items-center justify-between mb-2">
+              <span className="text-xs font-bold text-indigo-600 uppercase tracking-wider">{product.category}</span>
+              <div className="flex items-center space-x-1 bg-slate-100 px-2 py-1 rounded-full">
+                <Star className="w-3 h-3 text-[#ffc107] fill-current" />
+                <span className="text-[10px] font-bold text-slate-800">{averageRating}</span>
               </div>
-              <span className="text-xs text-slate-500">4.8 (120) | 200+ sold</span>
             </div>
 
+            {/* Title */}
+            <h1 className="text-lg md:text-3xl font-black tracking-tight text-slate-900 leading-snug">{product.name}</h1>
+
             {/* Price */}
-            <div className="mt-4 flex items-end space-x-3">
-              <p className="text-2xl font-bold text-slate-900">
+            <div className="mt-3 md:mt-4 flex flex-wrap items-baseline gap-2">
+              <p className="text-2xl md:text-3xl font-black text-slate-900">
                 ₹{product.price.toLocaleString('en-IN', { maximumFractionDigits: 0 })}
               </p>
-              <p className="text-sm text-slate-400 line-through mb-1">
+              <p className="text-sm text-slate-400 line-through font-medium">
                 ₹{originalPrice.toLocaleString('en-IN', { maximumFractionDigits: 0 })}
               </p>
-              <span className="text-xs font-semibold text-emerald-500 bg-emerald-50 px-2 py-1 rounded mb-1">
-                -{discount}% OFF
+              <span className="text-[10px] font-black text-white bg-red-500 px-2 py-0.5 rounded-sm uppercase tracking-wide ml-1">
+                {discount}% OFF
               </span>
             </div>
 
             {/* Sizes */}
             {sizes.length > 0 && (
               <div className="mt-6">
-                <h3 className="text-sm font-medium text-slate-900 mb-3">
-                  Size: <span className="text-slate-500 font-normal">{selectedSize}</span>
-                </h3>
-                <div className="flex items-center flex-wrap gap-3">
+                <div className="flex justify-between items-end mb-3">
+                  <h3 className="text-sm font-bold text-slate-900">Size</h3>
+                  <span className="text-xs font-medium text-indigo-600 underline">Size Guide</span>
+                </div>
+                <div className="flex flex-wrap gap-2 md:gap-3">
                   {sizes.map((size) => (
                     <button
                       key={size}
                       onClick={() => setSelectedSize(size)}
-                      className={`px-4 py-2 rounded-xl border text-sm font-semibold transition-colors ${
+                      className={`flex-1 min-w-[3.5rem] py-2 md:py-2.5 rounded-lg border text-xs md:text-sm font-bold transition-all ${
                         selectedSize === size 
-                          ? 'border-[#4F46E5] bg-[#4F46E5] text-white shadow-sm' 
+                          ? 'border-slate-900 bg-slate-900 text-white shadow-md' 
                           : 'border-slate-200 text-slate-700 hover:border-slate-300 bg-white'
                       }`}
                     >
@@ -323,19 +361,21 @@ export default function ProductDetailsPage() {
                 </div>
               </div>
             )}
-            <div className="mt-6">
-              <h3 className="text-sm font-medium text-slate-900 mb-3">
-                Color: <span className="text-slate-500 font-normal">{colors[selectedColor].name}</span>
+
+            {/* Colors */}
+            <div className="mt-6 md:mt-8">
+              <h3 className="text-sm font-bold text-slate-900 mb-3">
+                Color: <span className="text-slate-500 font-medium ml-1">{colors[selectedColor].name}</span>
               </h3>
               <div className="flex items-center space-x-3">
                 {colors.map((color, idx) => (
                   <button
                     key={idx}
                     onClick={() => setSelectedColor(idx)}
-                    className={`w-8 h-8 rounded-full flex items-center justify-center border-2 ${selectedColor === idx ? 'border-blue-600' : 'border-transparent'}`}
+                    className={`w-9 h-9 md:w-10 md:h-10 rounded-full flex items-center justify-center transition-all ${selectedColor === idx ? 'ring-2 ring-offset-2 ring-slate-900' : 'ring-1 ring-slate-200'}`}
                   >
                     <span 
-                      className={`w-6 h-6 rounded-full border border-slate-200 shadow-sm`} 
+                      className={`w-7 h-7 md:w-8 md:h-8 rounded-full border border-black/10`} 
                       style={{ backgroundColor: color.hex }}
                     />
                   </button>
@@ -344,26 +384,26 @@ export default function ProductDetailsPage() {
             </div>
 
             {/* Quantity */}
-            <div className="mt-6">
-              <h3 className="text-sm font-medium text-slate-900 mb-3">Quantity</h3>
-              <div className="flex items-center border border-slate-200 rounded-xl w-fit">
-                <button onClick={() => setQuantity(Math.max(1, quantity - 1))} className="w-10 h-10 text-slate-500 hover:text-slate-800 flex items-center justify-center">-</button>
-                <span className="w-10 text-center font-medium text-sm">{quantity}</span>
-                <button onClick={() => setQuantity(quantity + 1)} className="w-10 h-10 text-slate-500 hover:text-slate-800 flex items-center justify-center">+</button>
+            <div className="mt-6 md:mt-8 pb-4">
+              <h3 className="text-sm font-bold text-slate-900 mb-3">Quantity</h3>
+              <div className="flex items-center border border-slate-200 rounded-xl w-fit bg-slate-50">
+                <button onClick={() => setQuantity(Math.max(1, quantity - 1))} className="w-10 h-10 text-slate-600 hover:text-slate-900 flex items-center justify-center font-medium text-lg">-</button>
+                <span className="w-10 text-center font-bold text-sm">{quantity}</span>
+                <button onClick={() => setQuantity(quantity + 1)} className="w-10 h-10 text-slate-600 hover:text-slate-900 flex items-center justify-center font-medium text-lg">+</button>
               </div>
             </div>
 
-            {/* Action Buttons */}
-            <div className="mt-8 flex flex-col space-y-3 md:flex-row md:space-y-0 md:space-x-4">
+            {/* Action Buttons (Desktop only, Mobile moved to sticky bottom) */}
+            <div className="mt-8 hidden md:flex space-x-4">
               <button
                 onClick={handleAddToCart}
-                className="w-full bg-[#4F46E5] text-white rounded-xl py-3.5 flex items-center justify-center text-sm font-semibold hover:bg-[#4338ca] transition"
+                className="flex-1 bg-slate-100 text-slate-900 rounded-xl py-4 flex items-center justify-center text-sm font-bold hover:bg-slate-200 transition"
               >
                 Add to Cart
               </button>
               <button
                 onClick={handleBuyNow}
-                className="w-full bg-white border border-slate-200 text-slate-900 rounded-xl py-3.5 flex items-center justify-center text-sm font-semibold hover:bg-slate-50 transition"
+                className="flex-1 bg-slate-900 text-white rounded-xl py-4 flex items-center justify-center text-sm font-bold hover:bg-slate-800 transition shadow-md shadow-slate-900/20"
               >
                 Buy Now
               </button>
@@ -372,92 +412,92 @@ export default function ProductDetailsPage() {
         </div>
 
         {/* Tabs Section */}
-        <div className="mt-12 lg:px-8 px-4 pb-12">
-          <div className="border-b border-slate-200">
-            <div className="flex gap-8 overflow-x-auto hide-scrollbar">
+        <div className="mt-8 lg:px-8 px-4 pb-12">
+          <div className="border-b border-slate-200 sticky top-14 md:top-0 bg-white z-10">
+            <div className="flex gap-6 overflow-x-auto hide-scrollbar">
               <button 
                 onClick={() => setActiveTab('description')}
-                className={`py-4 text-sm font-semibold border-b-2 whitespace-nowrap transition-colors ${activeTab === 'description' ? 'border-indigo-600 text-indigo-600' : 'border-transparent text-slate-500 hover:text-slate-700'}`}
+                className={`py-3 md:py-4 text-xs md:text-sm font-bold border-b-2 whitespace-nowrap transition-colors ${activeTab === 'description' ? 'border-slate-900 text-slate-900' : 'border-transparent text-slate-400 hover:text-slate-700'}`}
               >
                 Description
               </button>
               <button 
                 onClick={() => setActiveTab('specifications')}
-                className={`py-4 text-sm font-semibold border-b-2 whitespace-nowrap transition-colors ${activeTab === 'specifications' ? 'border-indigo-600 text-indigo-600' : 'border-transparent text-slate-500 hover:text-slate-700'}`}
+                className={`py-3 md:py-4 text-xs md:text-sm font-bold border-b-2 whitespace-nowrap transition-colors ${activeTab === 'specifications' ? 'border-slate-900 text-slate-900' : 'border-transparent text-slate-400 hover:text-slate-700'}`}
               >
                 Specifications
               </button>
               <button 
                 onClick={() => setActiveTab('reviews')}
-                className={`py-4 text-sm font-semibold border-b-2 whitespace-nowrap transition-colors flex items-center gap-2 ${activeTab === 'reviews' ? 'border-indigo-600 text-indigo-600' : 'border-transparent text-slate-500 hover:text-slate-700'}`}
+                className={`py-3 md:py-4 text-xs md:text-sm font-bold border-b-2 whitespace-nowrap transition-colors flex items-center gap-1.5 ${activeTab === 'reviews' ? 'border-slate-900 text-slate-900' : 'border-transparent text-slate-400 hover:text-slate-700'}`}
               >
-                Reviews <span className="bg-slate-100 text-slate-600 py-0.5 px-2 rounded-full text-xs">{reviews.length}</span>
+                Reviews <span className={`py-0.5 px-1.5 rounded-md text-[10px] ${activeTab === 'reviews' ? 'bg-slate-900 text-white' : 'bg-slate-100 text-slate-600'}`}>{reviews.length}</span>
               </button>
             </div>
           </div>
 
-          <div className="py-8">
+          <div className="py-6">
             {activeTab === 'description' && (
-              <div className="prose prose-sm prose-slate max-w-none">
-                <p className="text-slate-600 leading-relaxed">
+              <div className="prose prose-sm md:prose-base prose-slate max-w-none">
+                <p className="text-slate-600 leading-relaxed text-sm">
                   {product.description || 'No description available for this product.'}
                 </p>
-                <div className="mt-6 grid grid-cols-1 md:grid-cols-2 gap-6">
-                  <div className="bg-slate-50 p-6 rounded-2xl">
-                    <h4 className="font-semibold text-slate-900 mb-2">Premium Quality</h4>
-                    <p className="text-sm text-slate-600">Crafted with attention to detail and high-quality materials for long-lasting durability.</p>
+                <div className="mt-6 space-y-4 md:space-y-0 md:grid md:grid-cols-2 md:gap-6">
+                  <div className="bg-slate-50 p-5 rounded-xl border border-slate-100">
+                    <h4 className="font-bold text-slate-900 mb-1.5 text-sm">Premium Quality</h4>
+                    <p className="text-xs text-slate-500 leading-relaxed">Crafted with attention to detail and high-quality materials for long-lasting durability.</p>
                   </div>
-                  <div className="bg-slate-50 p-6 rounded-2xl">
-                    <h4 className="font-semibold text-slate-900 mb-2">Modern Design</h4>
-                    <p className="text-sm text-slate-600">Sleek and contemporary aesthetics that perfectly complement your lifestyle.</p>
+                  <div className="bg-slate-50 p-5 rounded-xl border border-slate-100">
+                    <h4 className="font-bold text-slate-900 mb-1.5 text-sm">Modern Design</h4>
+                    <p className="text-xs text-slate-500 leading-relaxed">Sleek and contemporary aesthetics that perfectly complement your lifestyle.</p>
                   </div>
                 </div>
               </div>
             )}
 
             {activeTab === 'specifications' && (
-              <div className="max-w-2xl">
-                <div className="divide-y divide-slate-100 border-t border-slate-100">
-                  <div className="py-3 flex justify-between">
-                    <span className="text-sm font-medium text-slate-500">Brand</span>
-                    <span className="text-sm font-semibold text-slate-900">SwiftStore</span>
+              <div className="max-w-2xl bg-slate-50 rounded-xl p-4 md:p-6 border border-slate-100">
+                <div className="divide-y divide-slate-200/60">
+                  <div className="py-2.5 flex justify-between">
+                    <span className="text-xs md:text-sm font-medium text-slate-500">Brand</span>
+                    <span className="text-xs md:text-sm font-bold text-slate-900">SwiftStore</span>
                   </div>
-                  <div className="py-3 flex justify-between">
-                    <span className="text-sm font-medium text-slate-500">Category</span>
-                    <span className="text-sm font-semibold text-slate-900">{product.category}</span>
+                  <div className="py-2.5 flex justify-between">
+                    <span className="text-xs md:text-sm font-medium text-slate-500">Category</span>
+                    <span className="text-xs md:text-sm font-bold text-slate-900">{product.category}</span>
                   </div>
-                  <div className="py-3 flex justify-between">
-                    <span className="text-sm font-medium text-slate-500">Stock Status</span>
-                    <span className="text-sm font-semibold text-slate-900">{product.stock > 0 ? 'In Stock' : 'Out of Stock'}</span>
+                  <div className="py-2.5 flex justify-between">
+                    <span className="text-xs md:text-sm font-medium text-slate-500">Stock Status</span>
+                    <span className="text-xs md:text-sm font-bold text-slate-900">{product.stock > 0 ? 'In Stock' : 'Out of Stock'}</span>
                   </div>
-                  <div className="py-3 flex justify-between">
-                    <span className="text-sm font-medium text-slate-500">SKU</span>
-                    <span className="text-sm font-semibold text-slate-900">{product.id.slice(0, 8).toUpperCase()}</span>
+                  <div className="py-2.5 flex justify-between">
+                    <span className="text-xs md:text-sm font-medium text-slate-500">SKU</span>
+                    <span className="text-xs md:text-sm font-bold text-slate-900">{product.id.slice(0, 8).toUpperCase()}</span>
                   </div>
                 </div>
               </div>
             )}
 
             {activeTab === 'reviews' && (
-              <div>
+              <div className="max-w-3xl">
                 <div className="flex items-center justify-between mb-6">
                   <div className="flex items-center space-x-2">
-                    <Star className="w-6 h-6 text-[#ffc107] fill-current" />
-                    <span className="font-bold text-slate-900">{averageRating}</span>
-                  <span className="text-sm text-slate-500">({reviews.length > 0 ? reviews.length : 120} reviews)</span>
-                </div>
+                    <Star className="w-6 h-6 md:w-8 md:h-8 text-[#ffc107] fill-current" />
+                    <span className="text-2xl md:text-3xl font-black text-slate-900">{averageRating}</span>
+                    <span className="text-xs md:text-sm font-medium text-slate-500 mt-1">({reviews.length > 0 ? reviews.length : 120} reviews)</span>
+                  </div>
                 </div>
                 
                 {/* Add Review Form */}
-                <form onSubmit={handleSubmitReview} className="bg-slate-50 rounded-2xl p-5 mb-8 border border-slate-100">
-                  <h4 className="text-sm font-semibold text-slate-900 mb-3">Write a Review</h4>
-                  <div className="flex items-center space-x-1 mb-4">
+                <form onSubmit={handleSubmitReview} className="bg-slate-50 rounded-xl p-4 md:p-6 mb-8 border border-slate-100">
+                  <h4 className="text-xs md:text-sm font-bold text-slate-900 mb-3">Write a Review</h4>
+                  <div className="flex items-center space-x-1 mb-3">
                     {[1, 2, 3, 4, 5].map((star) => (
                       <button
                         key={star}
                         type="button"
                         onClick={() => setNewReviewRating(star)}
-                        className="focus:outline-none"
+                        className="focus:outline-none transition-transform hover:scale-110"
                       >
                         <Star 
                           className={`w-6 h-6 ${star <= newReviewRating ? 'text-[#ffc107] fill-current' : 'text-slate-300'}`} 
@@ -469,43 +509,43 @@ export default function ProductDetailsPage() {
                     value={newReviewComment}
                     onChange={(e) => setNewReviewComment(e.target.value)}
                     placeholder="Share your thoughts about this product..."
-                    className="w-full bg-white border border-slate-200 rounded-xl px-4 py-3 text-sm focus:ring-1 focus:ring-[#4F46E5] focus:border-[#4F46E5] outline-none placeholder:text-slate-400 min-h-[100px] resize-none mb-3"
+                    className="w-full bg-white border border-slate-200 rounded-xl px-4 py-3 text-xs md:text-sm focus:ring-2 focus:ring-slate-900 focus:border-slate-900 outline-none placeholder:text-slate-400 min-h-[90px] resize-none mb-3 transition-shadow shadow-inner"
                   />
                   <button
                     type="submit"
                     disabled={isSubmittingReview}
-                    className="bg-slate-900 text-white rounded-lg px-6 py-2.5 text-sm font-semibold hover:bg-slate-800 transition disabled:bg-slate-300"
+                    className="w-full md:w-auto bg-slate-900 text-white rounded-xl px-6 py-3 text-xs md:text-sm font-bold hover:bg-slate-800 transition shadow-md disabled:bg-slate-300 disabled:shadow-none"
                   >
                     {isSubmittingReview ? 'Submitting...' : 'Submit Review'}
                   </button>
                 </form>
 
                 {/* Reviews List */}
-                <div className="space-y-5">
+                <div className="space-y-4 md:space-y-6">
                   {reviews.length > 0 ? (
                     reviews.map((review) => (
-                      <div key={review.id} className="border-b border-slate-100 pb-5 last:border-0">
-                        <div className="flex justify-between items-start mb-2">
+                      <div key={review.id} className="border-b border-slate-100 pb-4 last:border-0 last:pb-0">
+                        <div className="flex justify-between items-start mb-1.5">
                           <div>
-                            <p className="font-semibold text-sm text-slate-900">{review.userName}</p>
-                            <p className="text-xs text-slate-500">
+                            <p className="font-bold text-xs md:text-sm text-slate-900">{review.userName}</p>
+                            <p className="text-[10px] md:text-xs text-slate-400 font-medium mt-0.5">
                               {review.createdAt ? new Date(review.createdAt.toDate ? review.createdAt.toDate() : review.createdAt).toLocaleDateString() : 'Just now'}
                             </p>
                           </div>
-                          <div className="flex space-x-0.5">
+                          <div className="flex space-x-0.5 bg-slate-50 px-1.5 py-1 rounded-md border border-slate-100">
                             {[1, 2, 3, 4, 5].map((star) => (
                               <Star 
                                 key={star} 
-                                className={`w-3.5 h-3.5 ${star <= review.rating ? 'text-[#ffc107] fill-current' : 'text-slate-300'}`} 
+                                className={`w-3 h-3 ${star <= review.rating ? 'text-[#ffc107] fill-current' : 'text-slate-200'}`} 
                               />
                             ))}
                           </div>
                         </div>
-                        <p className="text-sm text-slate-600 mt-2">{review.comment}</p>
+                        <p className="text-xs md:text-sm text-slate-600 leading-relaxed mt-2">{review.comment}</p>
                       </div>
                     ))
                   ) : (
-                    <p className="text-sm text-slate-500 italic text-center py-4">No reviews yet. Be the first to review this product!</p>
+                    <p className="text-xs md:text-sm text-slate-400 font-medium italic text-center py-6">No reviews yet. Be the first to review this product!</p>
                   )}
                 </div>
               </div>
@@ -515,32 +555,33 @@ export default function ProductDetailsPage() {
 
         {/* Related Products */}
         {relatedProducts.length > 0 && (
-          <div className="border-t border-slate-100 pt-12 pb-20 lg:px-8 px-4">
-            <div className="flex items-center justify-between mb-6">
-              <h2 className="text-2xl font-bold text-slate-900">Related Products</h2>
-              <Link to={`/category/${product.category}`} className="text-sm font-semibold text-indigo-600 hover:text-indigo-700">
+          <div className="border-t border-slate-100 pt-8 pb-10 lg:px-8 px-4">
+            <div className="flex items-center justify-between mb-4 md:mb-6">
+              <h2 className="text-lg md:text-2xl font-black text-slate-900">You Might Also Like</h2>
+              <Link to={`/category/${product.category}`} className="text-xs md:text-sm font-bold text-indigo-600 hover:text-indigo-700">
                 View All
               </Link>
             </div>
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6">
+            {/* Horizontal scroll on mobile, grid on desktop */}
+            <div className="flex md:grid md:grid-cols-4 gap-3 md:gap-6 overflow-x-auto md:overflow-visible pb-4 md:pb-0 -mx-4 px-4 md:mx-0 md:px-0 hide-scrollbar snap-x snap-mandatory">
               {relatedProducts.map((p) => (
                 <Link
                   key={p.id}
                   to={`/product/${p.id}`}
-                  className="group flex flex-col bg-white rounded-2xl overflow-hidden border border-slate-100 shadow-sm hover:shadow-lg transition-all duration-300 hover:-translate-y-1"
+                  className="group flex-none w-[40vw] md:w-auto snap-start flex flex-col bg-white rounded-2xl overflow-hidden border border-slate-100 shadow-[0_2px_10px_-4px_rgba(0,0,0,0.05)] hover:shadow-lg transition-all duration-300 md:hover:-translate-y-1"
                 >
-                  <div className="relative aspect-square bg-[#f8f9fa] flex items-center justify-center overflow-hidden p-4">
+                  <div className="relative aspect-[4/5] bg-[#f8f9fa] flex items-center justify-center overflow-hidden p-4">
                     <img
-                      src={p.imageUrl || `https://picsum.photos/seed/${p.id}/400/400`}
+                      src={p.imageUrl || `https://picsum.photos/seed/${p.id}/400/500`}
                       alt={p.name}
                       className="w-full h-full object-contain group-hover:scale-105 transition-transform duration-500"
                       referrerPolicy="no-referrer"
                     />
                   </div>
-                  <div className="p-4 flex flex-col flex-1">
-                    <h3 className="text-sm font-bold text-slate-900 truncate mb-1">{p.name}</h3>
+                  <div className="p-3 md:p-4 flex flex-col flex-1">
+                    <h3 className="text-xs md:text-sm font-bold text-slate-900 truncate mb-1">{p.name}</h3>
                     <div className="mt-auto flex items-center justify-between">
-                      <span className="font-black text-sm text-slate-900">
+                      <span className="font-black text-xs md:text-sm text-slate-900">
                         ₹{p.price.toLocaleString("en-IN", { maximumFractionDigits: 0 })}
                       </span>
                     </div>
@@ -550,10 +591,28 @@ export default function ProductDetailsPage() {
             </div>
           </div>
         )}
+
+        {/* Sticky Mobile Action Bar */}
+        <div className="md:hidden fixed bottom-0 left-0 right-0 bg-white border-t border-slate-200 p-3 pb-5 flex gap-3 z-50 shadow-[0_-4px_12px_rgba(0,0,0,0.05)]">
+          <button
+            onClick={handleAddToCart}
+            className="flex-[0.8] bg-slate-100 text-slate-900 rounded-xl py-3.5 flex items-center justify-center text-xs font-bold hover:bg-slate-200 transition"
+          >
+            Add to Cart
+          </button>
+          <button
+            onClick={handleBuyNow}
+            className="flex-1 bg-slate-900 text-white rounded-xl py-3.5 flex items-center justify-center text-xs font-bold shadow-md shadow-slate-900/20"
+          >
+            Buy Now
+          </button>
+        </div>
       </main>
 
       <Footer />
-      <BottomNav />
+      <div className="hidden md:block">
+        <BottomNav />
+      </div>
     </div>
   );
 }

@@ -291,8 +291,7 @@ export default function HomePage() {
                     </div>
                     <div
                       ref={scrollRef}
-                      className="flex md:grid md:grid-cols-4 lg:grid-cols-5 gap-3 md:gap-5 overflow-x-auto overflow-y-hidden overscroll-x-contain snap-x snap-mandatory pb-4 -mx-4 px-4 md:mx-0 md:px-0 [&::-webkit-scrollbar]:hidden"
-                      style={{ scrollbarWidth: 'none', msOverflowStyle: 'none', WebkitOverflowScrolling: 'touch' }}
+                      className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-3 md:gap-5 pb-4"
                     >
                       {products.map((product: any, idx: number) => {
                         let badge = null;
@@ -306,18 +305,19 @@ export default function HomePage() {
                           <Link
                             to={`/product/${product.id}`}
                             key={product.id}
-                            className="group flex-none w-[35%] md:w-auto snap-start flex flex-col bg-white rounded-2xl overflow-hidden shadow-[0_2px_12px_-4px_rgba(0,0,0,0.08)] border border-slate-100 md:hover:shadow-[0_8px_24px_-8px_rgba(0,0,0,0.12)] transition-all duration-300 md:hover:-translate-y-1"
+                            className="group flex flex-col bg-white rounded-2xl overflow-hidden shadow-[0_2px_12px_-4px_rgba(0,0,0,0.08)] border border-slate-100 md:hover:shadow-[0_8px_24px_-8px_rgba(0,0,0,0.12)] transition-all duration-300 md:hover:-translate-y-1"
                           >
                             <div className="relative aspect-[4/5] w-full bg-slate-100 overflow-hidden flex items-center justify-center">
                               {badge}
                               <button
-                                className={`absolute top-2.5 right-2.5 w-7 h-7 md:w-8 md:h-8 rounded-full bg-white/90 backdrop-blur-sm flex items-center justify-center shadow-sm hover:text-rose-500 hover:bg-white transition-colors z-10 ${wishlist.includes(product.id) ? 'text-rose-500' : 'text-slate-400'}`}
+                                className={`absolute top-2 right-2 md:top-3 md:right-3 w-8 h-8 md:w-9 md:h-9 rounded-full bg-white/90 backdrop-blur-sm flex items-center justify-center shadow-sm hover:text-rose-500 hover:bg-white transition-colors z-10 ${wishlist.includes(product.id) ? 'text-rose-500' : 'text-slate-400'}`}
                                 onClick={(e) => {
                                   e.preventDefault();
+                                  e.stopPropagation();
                                   requireAuth(() => toggleWishlist(product.id));
                                 }}
                               >
-                                <Heart className={`w-3.5 h-3.5 md:w-4 md:h-4 ${wishlist.includes(product.id) ? 'fill-rose-500 text-rose-500' : ''}`} />
+                                <Heart className={`w-4 h-4 md:w-5 md:h-5 ${wishlist.includes(product.id) ? 'fill-rose-500 text-rose-500' : ''}`} />
                               </button>
                               <img
                                 src={product.imageUrl || `https://picsum.photos/seed/${product.id}/400/500`}
@@ -392,10 +392,10 @@ export default function HomePage() {
                                   </span>
                                   {/* Wishlist */}
                                   <button
-                                    className={`absolute top-2 right-2 w-6 h-6 md:w-7 md:h-7 rounded-full bg-white/90 backdrop-blur-sm flex items-center justify-center shadow-sm z-10 ${wishlist.includes(product.id) ? 'text-rose-500' : 'text-slate-400'}`}
-                                    onClick={(e) => { e.preventDefault(); requireAuth(() => toggleWishlist(product.id)); }}
+                                    className={`absolute top-2 right-2 md:top-3 md:right-3 w-8 h-8 md:w-9 md:h-9 rounded-full bg-white/90 backdrop-blur-sm flex items-center justify-center shadow-sm z-10 ${wishlist.includes(product.id) ? 'text-rose-500' : 'text-slate-400'}`}
+                                    onClick={(e) => { e.preventDefault(); e.stopPropagation(); requireAuth(() => toggleWishlist(product.id)); }}
                                   >
-                                    <Heart className={`w-3 h-3 md:w-3.5 md:h-3.5 ${wishlist.includes(product.id) ? 'fill-rose-500 text-rose-500' : ''}`} />
+                                    <Heart className={`w-4 h-4 md:w-5 md:h-5 ${wishlist.includes(product.id) ? 'fill-rose-500 text-rose-500' : ''}`} />
                                   </button>
                                   {/* Price overlay on image */}
                                   <div className="absolute bottom-2 left-2 right-2 md:bottom-2.5 md:left-3 md:right-3 flex justify-between items-end">
@@ -467,15 +467,13 @@ export default function HomePage() {
                         </div>
 
                         {/* ── RIGHT PANEL: Product cards (Slider) ── */}
-                        <div className="flex-1 min-w-0 md:bg-slate-50/50 md:p-6 lg:p-10 flex items-center relative group z-10">
+                        <div className="flex-1 min-w-0 md:bg-slate-50/50 md:p-6 lg:p-10 flex items-center relative group z-10 overflow-hidden">
                           <div 
-                            ref={flashSaleScrollRef}
-                            className="flex gap-4 md:gap-6 overflow-x-auto overflow-y-hidden overscroll-x-contain pb-4 md:pb-0 [&::-webkit-scrollbar]:hidden w-full snap-x snap-mandatory" 
-                            style={{ scrollbarWidth: 'none', WebkitOverflowScrolling: 'touch' }}
+                            className="flex gap-4 md:gap-6 w-max animate-marquee hover:[animation-play-state:paused] pb-4 md:pb-0" 
                           >
-                            {(storefront.flashSale.products || []).map((item: any, idx: number) => (
+                            {[...(storefront.flashSale.products || []), ...(storefront.flashSale.products || [])].map((item: any, idx: number) => (
                               <Link
-                                key={item.id || idx}
+                                key={`${item.id || 'flash'}-${idx}`}
                                 to={storefront.flashSale.link || '/shop'}
                                 className="group flex-none w-[45vw] md:w-60 lg:w-64 bg-white/60 backdrop-blur-md rounded-sm overflow-hidden shadow-[0_4px_20px_rgba(0,0,0,0.06)] hover:-translate-y-1 transition-all duration-500 relative border border-white/80 hover:border-amber-300/50"
                               >
@@ -490,10 +488,10 @@ export default function HomePage() {
                                   
                                   {/* Wishlist Button */}
                                   <button
-                                    className={`absolute top-3 right-3 w-7 h-7 rounded-full bg-white/90 backdrop-blur-sm flex items-center justify-center shadow-sm z-10 ${wishlist.includes(item.id) ? 'text-rose-500' : 'text-slate-400'}`}
-                                    onClick={(e) => { e.preventDefault(); requireAuth(() => toggleWishlist(item.id)); }}
+                                    className={`absolute top-2 right-2 md:top-3 md:right-3 w-8 h-8 md:w-9 md:h-9 rounded-full bg-white/90 backdrop-blur-sm flex items-center justify-center shadow-sm z-10 ${wishlist.includes(item.id) ? 'text-rose-500' : 'text-slate-400'}`}
+                                    onClick={(e) => { e.preventDefault(); e.stopPropagation(); requireAuth(() => toggleWishlist(item.id)); }}
                                   >
-                                    <Heart className={`w-3.5 h-3.5 ${wishlist.includes(item.id) ? 'fill-rose-500 text-rose-500' : ''}`} />
+                                    <Heart className={`w-4 h-4 md:w-5 md:h-5 ${wishlist.includes(item.id) ? 'fill-rose-500 text-rose-500' : ''}`} />
                                   </button>
 
                                   {item.discount > 0 && (
