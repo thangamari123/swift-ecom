@@ -22,6 +22,11 @@ interface Product {
 const CategoryIcon = ({ cat, i }: { cat: any, i: number }) => {
   const [currentIdx, setCurrentIdx] = useState(0);
   const imgArray = [cat.image || cat.img];
+  if (cat.image2) imgArray.push(cat.image2);
+  if (cat.image3) imgArray.push(cat.image3);
+  if (cat.image4) imgArray.push(cat.image4);
+  if (cat.image5) imgArray.push(cat.image5);
+  if (cat.image6) imgArray.push(cat.image6);
   if (cat.additionalImages) {
     imgArray.push(...cat.additionalImages.split(',').map((u: string) => u.trim()).filter((u: string) => u));
   }

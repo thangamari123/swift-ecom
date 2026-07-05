@@ -4,6 +4,7 @@ import { doc, getDoc, setDoc } from 'firebase/firestore';
 import { toast } from 'react-toastify';
 import { Save, Store, ChevronRight, Briefcase, Package, CheckSquare, Link as LinkIcon, User, ArrowLeft } from 'lucide-react';
 import { useAdminRoleGuard } from '@/hooks/useAdminRoleGuard';
+import { ImageUploader } from '@/components/ui/ImageUploader';
 
 export default function AdminSettings() {
   useAdminRoleGuard(['Administrator']);
@@ -14,6 +15,7 @@ export default function AdminSettings() {
   const [settings, setSettings] = useState({
     storeName: 'SwiftStore',
     logoUrl: '',
+    faviconUrl: '',
     supportEmail: 'support@swiftstore.com',
     supportPhone: '+1 (555) 123-4567',
     taxRate: 8.5,
@@ -110,22 +112,20 @@ export default function AdminSettings() {
                 />
               </div>
               <div>
-                <label className="block text-sm font-semibold text-slate-700 mb-1.5">Store Logo URL</label>
-                <div className="flex items-center space-x-4 mb-2">
-                  {settings.logoUrl && (
-                    <div className="w-12 h-12 rounded-lg bg-slate-100 flex items-center justify-center overflow-hidden border border-slate-200">
-                      <img src={settings.logoUrl} alt="Logo Preview" className="max-w-full max-h-full object-contain" />
-                    </div>
-                  )}
-                  <input 
-                    type="url" 
-                    name="logoUrl" 
-                    value={settings.logoUrl || ''} 
-                    onChange={handleChange}
-                    placeholder="https://example.com/logo.png"
-                    className="flex-1 rounded-xl border-slate-200 bg-slate-50 shadow-sm focus:border-[#4F46E5] focus:ring-[#4F46E5] sm:text-sm p-3 border outline-none" 
-                  />
-                </div>
+                <ImageUploader 
+                  label="Store Logo"
+                  folder="logos"
+                  value={settings.logoUrl}
+                  onChange={(url) => setSettings(prev => ({ ...prev, logoUrl: url }))}
+                />
+              </div>
+              <div>
+                <ImageUploader 
+                  label="Favicon"
+                  folder="logos"
+                  value={settings.faviconUrl}
+                  onChange={(url) => setSettings(prev => ({ ...prev, faviconUrl: url }))}
+                />
               </div>
               <div>
                 <label className="block text-sm font-semibold text-slate-700 mb-1.5">Support Email</label>

@@ -4,6 +4,7 @@ import { doc, getDoc, setDoc } from 'firebase/firestore';
 import { toast } from 'react-toastify';
 import { Save, Plus, Trash2, GripVertical } from 'lucide-react';
 import { useAdminRoleGuard } from '@/hooks/useAdminRoleGuard';
+import { ImageUploader } from '@/components/ui/ImageUploader';
 
 export default function AdminStorefront() {
   useAdminRoleGuard(['Administrator', 'Manager', 'Editor']);
@@ -297,12 +298,11 @@ export default function AdminStorefront() {
                     />
                   </div>
                   <div>
-                    <label className="block text-xs font-semibold text-slate-600 mb-1">Image URL</label>
-                    <input 
-                      type="text" 
-                      value={slide.image} 
-                      onChange={(e) => updateSection('heroSlides', index, 'image', e.target.value)}
-                      className="w-full text-sm p-2 border border-slate-300 rounded focus:ring-1 focus:ring-indigo-500" 
+                    <ImageUploader 
+                      label="Image"
+                      folder="storefront"
+                      value={slide.image}
+                      onChange={(url) => updateSection('heroSlides', index, 'image', url)}
                     />
                   </div>
                   <div>
@@ -393,24 +393,48 @@ export default function AdminStorefront() {
                       />
                     </div>
                     <div>
-                      <label className="block text-xs font-semibold text-slate-600 mb-1">Primary Image URL</label>
-                      <input 
-                        type="text" 
-                        value={item.image} 
-                        onChange={(e) => updateSection('shopByCategory', index, 'image', e.target.value)}
-                        className="w-full text-sm p-2 border border-slate-300 rounded focus:ring-1 focus:ring-indigo-500" 
+                      <ImageUploader 
+                        label="Primary Image"
+                        folder="storefront"
+                        value={item.image}
+                        onChange={(url) => updateSection('shopByCategory', index, 'image', url)}
                       />
                     </div>
                   </div>
-                  <div>
-                    <label className="block text-xs font-semibold text-slate-600 mb-1">Additional Image URLs (Comma separated)</label>
-                    <input 
-                      type="text" 
-                      value={item.additionalImages || ''} 
-                      onChange={(e) => updateSection('shopByCategory', index, 'additionalImages', e.target.value)}
-                      className="w-full text-sm p-2 border border-slate-300 rounded focus:ring-1 focus:ring-indigo-500"
-                      placeholder="https://image1.jpg, https://image2.jpg"
-                    />
+                  <div className="md:col-span-3">
+                    <label className="block text-xs font-semibold text-slate-600 mb-2">Additional Images (Optional)</label>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
+                      <ImageUploader 
+                        label="Image 2"
+                        folder="storefront"
+                        value={item.image2 || ''}
+                        onChange={(url) => updateSection('shopByCategory', index, 'image2', url)}
+                      />
+                      <ImageUploader 
+                        label="Image 3"
+                        folder="storefront"
+                        value={item.image3 || ''}
+                        onChange={(url) => updateSection('shopByCategory', index, 'image3', url)}
+                      />
+                      <ImageUploader 
+                        label="Image 4"
+                        folder="storefront"
+                        value={item.image4 || ''}
+                        onChange={(url) => updateSection('shopByCategory', index, 'image4', url)}
+                      />
+                      <ImageUploader 
+                        label="Image 5"
+                        folder="storefront"
+                        value={item.image5 || ''}
+                        onChange={(url) => updateSection('shopByCategory', index, 'image5', url)}
+                      />
+                      <ImageUploader 
+                        label="Image 6"
+                        folder="storefront"
+                        value={item.image6 || ''}
+                        onChange={(url) => updateSection('shopByCategory', index, 'image6', url)}
+                      />
+                    </div>
                   </div>
                 </div>
                 <button 
@@ -469,12 +493,11 @@ export default function AdminStorefront() {
                 onChange={(e) => updateObject('greatestSale', 'subtitle', e.target.value)}
                 className="w-full text-sm p-2 border border-slate-300 rounded focus:ring-1 focus:ring-indigo-500 mb-4" 
               />
-              <label className="block text-xs font-semibold text-slate-600 mb-1">Image URL</label>
-              <input 
-                type="text" 
-                value={config.greatestSale?.image || ''} 
-                onChange={(e) => updateObject('greatestSale', 'image', e.target.value)}
-                className="w-full text-sm p-2 border border-slate-300 rounded focus:ring-1 focus:ring-indigo-500" 
+              <ImageUploader 
+                label="Image"
+                folder="storefront"
+                value={config.greatestSale?.image || ''}
+                onChange={(url) => updateObject('greatestSale', 'image', url)}
               />
             </div>
           </div>
@@ -533,12 +556,11 @@ export default function AdminStorefront() {
                     />
                   </div>
                   <div>
-                    <label className="block text-xs font-semibold text-slate-600 mb-1">Image URL</label>
-                    <input 
-                      type="text" 
-                      value={item.image} 
-                      onChange={(e) => updateSection('lovedOnes', index, 'image', e.target.value)}
-                      className="w-full text-sm p-2 border border-slate-300 rounded focus:ring-1 focus:ring-indigo-500" 
+                    <ImageUploader 
+                      label="Image"
+                      folder="storefront"
+                      value={item.image}
+                      onChange={(url) => updateSection('lovedOnes', index, 'image', url)}
                     />
                   </div>
                   <div>
@@ -621,12 +643,11 @@ export default function AdminStorefront() {
                     />
                   </div>
                   <div className="md:col-span-2">
-                    <label className="block text-xs font-semibold text-slate-600 mb-1">Image URL</label>
-                    <input 
-                      type="text" 
-                      value={item.image} 
-                      onChange={(e) => updateSection('priceWise', index, 'image', e.target.value)}
-                      className="w-full text-sm p-2 border border-slate-300 rounded focus:ring-1 focus:ring-indigo-500" 
+                    <ImageUploader 
+                      label="Image"
+                      folder="storefront"
+                      value={item.image}
+                      onChange={(url) => updateSection('priceWise', index, 'image', url)}
                     />
                   </div>
                   <div className="grid grid-cols-2 gap-2">
@@ -720,12 +741,11 @@ export default function AdminStorefront() {
                     />
                   </div>
                   <div>
-                    <label className="block text-xs font-semibold text-slate-600 mb-1">Image URL</label>
-                    <input 
-                      type="text" 
-                      value={item.image} 
-                      onChange={(e) => updateSection('summerSpecials', index, 'image', e.target.value)}
-                      className="w-full text-sm p-2 border border-slate-300 rounded focus:ring-1 focus:ring-indigo-500" 
+                    <ImageUploader 
+                      label="Image"
+                      folder="storefront"
+                      value={item.image}
+                      onChange={(url) => updateSection('summerSpecials', index, 'image', url)}
                     />
                   </div>
                   <div>
@@ -808,12 +828,11 @@ export default function AdminStorefront() {
                     />
                   </div>
                   <div>
-                    <label className="block text-xs font-semibold text-slate-600 mb-1">Image URL</label>
-                    <input 
-                      type="text" 
-                      value={item.image} 
-                      onChange={(e) => updateSection('occasionCollections', index, 'image', e.target.value)}
-                      className="w-full text-sm p-2 border border-slate-300 rounded focus:ring-1 focus:ring-indigo-500" 
+                    <ImageUploader 
+                      label="Image"
+                      folder="storefront"
+                      value={item.image}
+                      onChange={(url) => updateSection('occasionCollections', index, 'image', url)}
                     />
                   </div>
                   <div>
@@ -953,13 +972,11 @@ export default function AdminStorefront() {
                     />
                   </div>
                   <div className="md:col-span-2">
-                    <label className="block text-xs font-semibold text-slate-600 mb-1">Image URL</label>
-                    <input
-                      type="text"
+                    <ImageUploader 
+                      label="Image"
+                      folder="storefront"
                       value={banner.image}
-                      onChange={(e) => updateCustomBanner(index, 'image', e.target.value)}
-                      placeholder="https://..."
-                      className="w-full text-sm p-2 border border-slate-300 rounded-lg focus:ring-1 focus:ring-indigo-500"
+                      onChange={(url) => updateCustomBanner(index, 'image', url)}
                     />
                   </div>
                   <div>
@@ -1158,16 +1175,15 @@ export default function AdminStorefront() {
                       />
                     </div>
                     <div className="col-span-2">
-                      <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">Image URL</label>
-                      <input
+                      <ImageUploader 
+                        label="Image"
+                        folder="storefront"
                         value={item.image || ''}
-                        onChange={e => {
+                        onChange={(url) => {
                           const prods = [...(config.flashSale?.products || [])];
-                          prods[idx] = { ...prods[idx], image: e.target.value };
+                          prods[idx] = { ...prods[idx], image: url };
                           setConfig((p: any) => ({ ...p, flashSale: { ...p.flashSale, products: prods } }));
                         }}
-                        className="w-full border border-slate-200 rounded-lg px-2.5 py-2 text-xs focus:outline-none focus:ring-2 focus:ring-rose-300 bg-white"
-                        placeholder="https://..."
                       />
                     </div>
                     <div>

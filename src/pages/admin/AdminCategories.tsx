@@ -5,6 +5,7 @@ import { toast } from 'react-toastify';
 import { Plus, X, Mouse, Cable, Headphones, Watch, Smartphone, Gamepad2, Package } from 'lucide-react';
 import { useForm } from 'react-hook-form';
 import { useAdminRoleGuard } from '@/hooks/useAdminRoleGuard';
+import { ImageUploader } from '@/components/ui/ImageUploader';
 
 export default function AdminCategories() {
   useAdminRoleGuard(['Administrator', 'Manager', 'Editor']);
@@ -12,7 +13,7 @@ export default function AdminCategories() {
   const [products, setProducts] = useState<any[]>([]);
   const [isAdding, setIsAdding] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
-  const { register, handleSubmit, reset, setValue } = useForm();
+  const { register, handleSubmit, reset, setValue, watch } = useForm();
 
   useEffect(() => {
     const unsubscribeCats = onSnapshot(collection(db, 'categories'), (snapshot) => {
@@ -152,8 +153,13 @@ export default function AdminCategories() {
               <input {...register('name', { required: true })} className="block w-full rounded-xl border-slate-200 shadow-sm focus:border-[#4F46E5] focus:ring-[#4F46E5] sm:text-sm p-3 border font-medium bg-slate-50" placeholder="e.g. Shirts, Sneakers" />
             </div>
             <div>
-              <label className="block text-sm font-bold text-slate-900 mb-2">Category Image URL (Optional)</label>
-              <input {...register('image')} className="block w-full rounded-xl border-slate-200 shadow-sm focus:border-[#4F46E5] focus:ring-[#4F46E5] sm:text-sm p-3 border font-medium bg-slate-50" placeholder="https://images.unsplash.com/..." />
+              <input type="hidden" {...register('image')} />
+              <ImageUploader 
+                label="Category Image (Optional)"
+                folder="categories"
+                value={watch('image')}
+                onChange={(url) => setValue('image', url, { shouldValidate: true, shouldDirty: true })}
+              />
             </div>
             <div className="flex gap-3 pt-2">
               <button type="submit" className="flex-1 py-3 bg-[#3b41e3] text-white rounded-xl hover:bg-[#2e34e5] font-bold shadow-sm transition-colors">

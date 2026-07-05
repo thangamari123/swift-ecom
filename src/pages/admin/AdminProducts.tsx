@@ -5,6 +5,7 @@ import { toast } from 'react-toastify';
 import { Plus, Trash2, Search, ArrowLeft, CloudUpload, ChevronDown, ChevronUp } from 'lucide-react';
 import { useForm } from 'react-hook-form';
 import { useAdminRoleGuard } from '@/hooks/useAdminRoleGuard';
+import { ImageUploader } from '@/components/ui/ImageUploader';
 
 interface Product {
   id: string;
@@ -40,7 +41,7 @@ export default function AdminProducts() {
     Watch: true,
   });
 
-  const { register, handleSubmit, reset, setValue, formState: { errors } } = useForm();
+  const { register, handleSubmit, reset, setValue, watch, formState: { errors } } = useForm();
 
   useEffect(() => {
     const q = query(collection(db, 'products'), orderBy('createdAt', 'desc'));
@@ -156,20 +157,26 @@ export default function AdminProducts() {
 
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-6 flex-1 pb-20 md:pb-0 max-w-2xl mx-auto w-full">
           {/* Upload Area */}
-          <div className="space-y-4">
-            <div className="border-2 border-dashed border-[#e0e7ff] rounded-2xl bg-[#f8faff] p-8 flex flex-col items-center justify-center text-center cursor-pointer hover:bg-[#f0f4ff] transition-colors">
-              <CloudUpload className="w-8 h-8 text-[#4F46E5] mb-2" />
-              <p className="text-sm font-bold text-slate-900 mb-1">Upload Product Images</p>
-              <p className="text-xs text-slate-500 font-medium">(JPG, PNG, Max. 5MB)</p>
+          <div className="space-y-6">
+            <div>
+              <h3 className="text-sm font-bold text-slate-900 border-b pb-2 mb-4">Product Images</h3>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <input type="hidden" {...register('imageUrl')} />
+                <input type="hidden" {...register('image2')} />
+                <input type="hidden" {...register('image3')} />
+                <input type="hidden" {...register('image4')} />
+                <input type="hidden" {...register('image5')} />
+                <ImageUploader label="Main Image" folder="products" value={watch('imageUrl')} onChange={(url) => setValue('imageUrl', url, { shouldValidate: true, shouldDirty: true })} />
+                <ImageUploader label="Image 2" folder="products" value={watch('image2')} onChange={(url) => setValue('image2', url, { shouldValidate: true, shouldDirty: true })} />
+                <ImageUploader label="Image 3" folder="products" value={watch('image3')} onChange={(url) => setValue('image3', url, { shouldValidate: true, shouldDirty: true })} />
+                <ImageUploader label="Image 4" folder="products" value={watch('image4')} onChange={(url) => setValue('image4', url, { shouldValidate: true, shouldDirty: true })} />
+                <ImageUploader label="Image 5" folder="products" value={watch('image5')} onChange={(url) => setValue('image5', url, { shouldValidate: true, shouldDirty: true })} />
+              </div>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-              <input {...register('imageUrl')} placeholder="Image URL 1 (Main)" className="block w-full rounded-xl border-slate-200 shadow-sm focus:border-[#4F46E5] focus:ring-[#4F46E5] sm:text-sm p-3 border font-medium bg-slate-50" />
-              <input {...register('videoUrl')} placeholder="Video URL (For Reels)" className="block w-full rounded-xl border-slate-200 shadow-sm focus:border-[#4F46E5] focus:ring-[#4F46E5] sm:text-sm p-3 border font-medium bg-slate-50" />
-              <input {...register('image2')} placeholder="Image URL 2" className="block w-full rounded-xl border-slate-200 shadow-sm focus:border-[#4F46E5] focus:ring-[#4F46E5] sm:text-sm p-3 border font-medium bg-slate-50" />
-              <input {...register('image3')} placeholder="Image URL 3" className="block w-full rounded-xl border-slate-200 shadow-sm focus:border-[#4F46E5] focus:ring-[#4F46E5] sm:text-sm p-3 border font-medium bg-slate-50" />
-              <input {...register('image4')} placeholder="Image URL 4" className="block w-full rounded-xl border-slate-200 shadow-sm focus:border-[#4F46E5] focus:ring-[#4F46E5] sm:text-sm p-3 border font-medium bg-slate-50" />
-              <input {...register('image5')} placeholder="Image URL 5" className="block w-full rounded-xl border-slate-200 shadow-sm focus:border-[#4F46E5] focus:ring-[#4F46E5] sm:text-sm p-3 border font-medium bg-slate-50" />
+            <div>
+              <h3 className="text-sm font-bold text-slate-900 border-b pb-2 mb-4">Product Video</h3>
+              <input {...register('videoUrl')} placeholder="Video URL (For Reels) e.g., YouTube or Instagram URL" className="block w-full rounded-xl border-slate-200 shadow-sm focus:border-[#4F46E5] focus:ring-[#4F46E5] sm:text-sm p-3 border font-medium bg-slate-50" />
             </div>
           </div>
 
