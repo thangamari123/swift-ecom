@@ -7,7 +7,8 @@ import { db } from "@/lib/firebase";
 import { collection, onSnapshot, query, where } from "firebase/firestore";
 import { useStore } from "@/lib/store";
 import { toast } from "react-toastify";
-import { Heart, ChevronRight, Star } from "lucide-react";
+import { Heart, Search, Filter, X, Star, ChevronRight } from 'lucide-react';
+import { getProductUrl } from '@/utils/slug';
 
 interface Product {
   id: string;
@@ -20,6 +21,10 @@ interface Product {
   reviews?: number;
   salePrice?: number;
   originalPrice?: number;
+  sizes?: string[];
+  colors?: string[];
+  newArrival?: boolean;
+  slug?: string;
 }
 
 const getCategoryImage = (name: string) => {
@@ -44,7 +49,7 @@ export default function CategoryPage() {
   const { wishlist, toggleWishlist, requireAuth } = useStore();
   const [sortBy, setSortBy] = useState("Newest");
 
-  const safeCategoryName = decodeURIComponent(categoryName || '');
+  const safeCategoryName = decodeURIComponent(categoryName || '').trim();
 
   useEffect(() => {
     if (!safeCategoryName) return;
@@ -52,8 +57,13 @@ export default function CategoryPage() {
     const q = query(collection(db, "products"), where("status", "==", "Active"));
     const unsubscribe = onSnapshot(q, (snapshot) => {
       const data = snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() } as Product));
-      // Case-insensitive comparison for robust matching
-      const filtered = data.filter(p => p.category?.toLowerCase() === safeCategoryName.toLowerCase());
+      let targetCat = safeCategoryName.toLowerCase().replace(/s$/, '').trim();
+      if (targetCat === 'home') targetCat = 'home decorate';
+      
+      const filtered = data.filter(p => {
+        const productCat = (p.category || '').toLowerCase().replace(/s$/, '').trim();
+        return productCat === targetCat;
+      });
       setProducts(filtered);
       setLoading(false);
     }, (error) => {
@@ -96,7 +106,7 @@ export default function CategoryPage() {
               <ChevronRight className="w-4 h-4 mx-1 md:mx-2" />
               <span className="text-white font-medium capitalize">{safeCategoryName}</span>
             </div>
-            <h1 className="text-4xl md:text-6xl font-serif text-white mb-2 md:mb-4 capitalize tracking-tight">
+            <h1 className="text-2xl md:text-4xl font-serif text-white mb-2 md:mb-4 capitalize tracking-tight">
               {safeCategoryName}
             </h1>
             <p className="text-white/80 max-w-xl text-sm md:text-base font-light">
@@ -152,7 +162,7 @@ export default function CategoryPage() {
               {sortedProducts.map((product) => (
                 <Link
                   key={product.id}
-                  to={`/product/${product.id}`}
+                  to={getProductUrl(product)}
                   className="group flex flex-col bg-white rounded-2xl overflow-hidden border border-slate-100 shadow-sm hover:shadow-xl hover:shadow-black/5 transition-all duration-300 hover:-translate-y-1"
                 >
                   <div className="relative aspect-square bg-[#f8f9fa] flex items-center justify-center overflow-hidden p-6">
@@ -171,9 +181,9 @@ export default function CategoryPage() {
                     >
                       <Heart className={`w-4 h-4 ${wishlist.includes(product.id) ? "fill-red-500 text-red-500" : ""}`} />
                     </button>
-                    {product.salePrice && product.originalPrice && product.originalPrice > product.salePrice && (
+                    {product.salePrice && product.originalPrice && Number(product.originalPrice) > Number(product.salePrice) && (
                       <div className="absolute top-3 left-3 bg-red-500 text-white text-[10px] font-bold px-2 py-1 rounded shadow-sm">
-                        -{Math.round(((product.originalPrice - product.salePrice) / product.originalPrice) * 100)}%
+                        -{Math.round(((Number(product.originalPrice) - Number(product.salePrice)) / Number(product.originalPrice)) * 100)}%
                       </div>
                     )}
                   </div>
@@ -186,9 +196,9 @@ export default function CategoryPage() {
                     </div>
                     <h3 className="font-semibold text-slate-900 text-sm line-clamp-2 mb-2 group-hover:text-black transition-colors">{product.name}</h3>
                     <div className="mt-auto flex items-center gap-2">
-                      <span className="font-bold text-slate-900">₹{(product.salePrice || product.price).toLocaleString()}</span>
-                      {product.salePrice && product.originalPrice && product.originalPrice > product.salePrice && (
-                        <span className="text-xs text-slate-400 line-through">₹{product.originalPrice.toLocaleString()}</span>
+                      <span className="font-bold text-slate-900">₹{Number(product.salePrice || product.price || 0).toLocaleString()}</span>
+                      {product.salePrice && product.originalPrice && Number(product.originalPrice) > Number(product.salePrice) && (
+                        <span className="text-xs text-slate-400 line-through">₹{Number(product.originalPrice).toLocaleString()}</span>
                       )}
                     </div>
                   </div>

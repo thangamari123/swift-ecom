@@ -6,6 +6,7 @@ import { Plus, Trash2, Search, ArrowLeft, CloudUpload, ChevronDown, ChevronUp } 
 import { useForm } from 'react-hook-form';
 import { useAdminRoleGuard } from '@/hooks/useAdminRoleGuard';
 import { ImageUploader } from '@/components/ui/ImageUploader';
+import { generateSlug } from '@/utils/slug';
 
 interface Product {
   id: string;
@@ -21,6 +22,7 @@ interface Product {
   status: string;
   trending?: boolean;
   newArrival?: boolean;
+  slug?: string;
 }
 
 export default function AdminProducts() {
@@ -112,6 +114,7 @@ export default function AdminProducts() {
         status: data.status || 'Active',
         trending: !!data.trending,
         newArrival: !!data.newArrival,
+        slug: generateSlug(data.name),
       };
 
       if (editingId) {

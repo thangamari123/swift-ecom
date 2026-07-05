@@ -2,8 +2,10 @@ import { useEffect, useState, useRef, Fragment } from 'react';
 import { Navbar } from '@/components/Navbar';
 import { BottomNav } from '@/components/BottomNav';
 import { Footer } from '@/components/Footer';
+
+import { getProductUrl } from '@/utils/slug';
 import { Link } from 'react-router-dom';
-import { ArrowRight, Truck, ShieldCheck, RefreshCcw, HeadphonesIcon, Heart, Star, ChevronLeft, ChevronRight } from 'lucide-react';
+import { ArrowRight, Heart, Star, ChevronLeft, ChevronRight } from 'lucide-react';
 import { db } from '@/lib/firebase';
 import { collection, doc, onSnapshot, query, where, orderBy } from 'firebase/firestore';
 import { useStore } from '@/lib/store';
@@ -14,23 +16,19 @@ interface Product {
   price: number;
   imageUrl: string;
   category: string;
-  stock?: number;
-  trending?: boolean;
+  stock: number;
   newArrival?: boolean;
+  trending?: boolean;
+  slug?: string;
 }
 
 const CategoryIcon = ({ cat, i }: { cat: any, i: number }) => {
   const [currentIdx, setCurrentIdx] = useState(0);
-  const imgArray = [cat.image || cat.img];
-  if (cat.image2) imgArray.push(cat.image2);
-  if (cat.image3) imgArray.push(cat.image3);
-  if (cat.image4) imgArray.push(cat.image4);
-  if (cat.image5) imgArray.push(cat.image5);
-  if (cat.image6) imgArray.push(cat.image6);
+  const imgArray = [cat.image, cat.img, cat.image2, cat.image3, cat.image4, cat.image5, cat.image6].filter(Boolean);
   if (cat.additionalImages) {
-    imgArray.push(...cat.additionalImages.split(',').map((u: string) => u.trim()).filter((u: string) => u));
+    imgArray.push(...cat.additionalImages.split(',').map((u: string) => u.trim()).filter(Boolean));
   }
-  
+
   useEffect(() => {
     if (imgArray.length <= 1) return;
     const interval = setInterval(() => {
@@ -41,30 +39,34 @@ const CategoryIcon = ({ cat, i }: { cat: any, i: number }) => {
 
   return (
     <Link
-      to={`/category/${encodeURIComponent(cat.name)}`}
-      className="group flex flex-col items-center flex-1 transition-all duration-300"
+      to={`/category/${encodeURIComponent(cat.name?.trim() || '')}`}
+      className="group flex flex-col items-center flex-1 transition-all duration-300 min-w-[60px]"
     >
-      <div className={`relative w-full max-w-[75px] md:max-w-[140px] aspect-square rounded-2xl overflow-hidden shadow-sm md:group-hover:shadow-md md:hover:-translate-y-1 transition-all duration-300 ${['bg-[#f2f7f2]', 'bg-[#fff0ef]', 'bg-[#fff8e7]', 'bg-[#f6f7f2]', 'bg-[#fff0f5]'][i % 5]}`}>
-        
-        {/* Images */}
+      <div className={`relative w-full max-w-[90px] md:max-w-[180px] aspect-square rounded-2xl overflow-hidden shadow-sm md:group-hover:shadow-md md:hover:-translate-y-1 transition-all duration-300 ${['bg-[#f2f7f2]', 'bg-[#fff0ef]', 'bg-[#fff8e7]', 'bg-[#f6f7f2]', 'bg-[#fff0f5]'][i % 5]}`}>
+        {/* Images or Fallback */}
         <div className="absolute inset-0 w-full h-full pb-5 md:pb-8 pt-2">
-          <div className="relative w-full h-full">
-            {imgArray.map((imgUrl, imgIdx) => (
-              <img
-                key={imgIdx}
-                src={imgUrl}
-                alt={cat.label}
-                className={`absolute inset-0 w-full h-full object-contain md:group-hover:scale-110 transition-all duration-700 ease-out ${imgIdx === currentIdx ? 'opacity-100 scale-100 translate-y-0 z-10' : 'opacity-0 scale-75 translate-y-4 z-0'}`}
-              />
-            ))}
+          <div className="relative w-full h-full flex items-center justify-center">
+            {imgArray.length > 0 ? (
+              imgArray.map((imgUrl, imgIdx) => (
+                <img
+                  key={imgIdx}
+                  src={imgUrl}
+                  alt={cat.label}
+                  className={`absolute inset-0 w-full h-full object-contain md:group-hover:scale-110 transition-all duration-700 ease-out ${imgIdx === currentIdx ? 'opacity-100 scale-100 translate-y-0 z-10' : 'opacity-0 scale-75 translate-y-4 z-0'}`}
+                />
+              ))
+            ) : (
+              <span className="text-2xl md:text-5xl font-black text-slate-800 opacity-20 uppercase">
+                {cat.label?.[0] || '?'}
+              </span>
+            )}
           </div>
         </div>
 
         {/* Name inside card */}
         <div className="absolute bottom-0 left-0 right-0 p-1.5 md:p-2 bg-white/40 backdrop-blur-sm">
-          <span className="block text-[9px] md:text-sm font-bold text-slate-900 text-center leading-tight truncate">{cat.label}</span>
+          <span className="block text-[10px] md:text-base font-bold text-slate-900 text-center leading-tight truncate">{cat.label}</span>
         </div>
-
       </div>
     </Link>
   );
@@ -78,16 +80,14 @@ export default function HomePage() {
   const [loadingStorefront, setLoadingStorefront] = useState(true);
   const { wishlist, toggleWishlist, requireAuth } = useStore();
   const [flashCountdown, setFlashCountdown] = useState({ h: '00', m: '00', s: '00', expired: false });
+  const [showPopup, setShowPopup] = useState(false);
 
   const slides = storefront?.heroSlides || [];
 
   const getSectionEnabled = (sectionKey: string) =>
     storefront?.sectionConfig?.[sectionKey]?.enabled ?? true;
 
-  const categoriesScrollRef = useRef<HTMLDivElement>(null);
-  const trendingScrollRef = useRef<HTMLDivElement>(null);
   const newArrivalsScrollRef = useRef<HTMLDivElement>(null);
-  const flashSaleScrollRef = useRef<HTMLDivElement>(null);
 
   // Auto-advance hero slider
   useEffect(() => {
@@ -149,7 +149,12 @@ export default function HomePage() {
 
     const unsubscribeStorefront = onSnapshot(doc(db, 'storefront', 'homepage'), (docSnap) => {
       if (docSnap.exists()) {
-        setStorefront(docSnap.data());
+        const data = docSnap.data();
+        setStorefront(data);
+        // Check if popup should be shown
+        if (data.homePopup?.enabled && data.homePopup?.image) {
+          setShowPopup(true);
+        }
       }
       setLoadingStorefront(false);
     }, (error) => {
@@ -164,10 +169,29 @@ export default function HomePage() {
   }, []);
 
   return (
-    <div className="min-h-screen bg-[#F6F7FB] pb-24 md:pb-0">
+    <div className="flex-1 bg-[#FAFAFA] flex flex-col min-h-[calc(100vh-64px)] md:min-h-[calc(100vh-80px)]">
       <Navbar />
 
-      <main className="w-full max-w-7xl mx-auto bg-white min-h-screen relative shadow-sm">
+      {/* HOME POPUP MODAL */}
+      {showPopup && storefront?.homePopup?.enabled && storefront?.homePopup?.image && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm">
+          <div className="relative max-w-lg w-full bg-white rounded-2xl shadow-2xl overflow-hidden animate-in fade-in zoom-in duration-300">
+            <button
+              onClick={() => setShowPopup(false)}
+              className="absolute top-3 right-3 z-10 p-2 bg-black/20 hover:bg-black/40 text-white rounded-full backdrop-blur-md transition-colors"
+              aria-label="Close popup"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M18 6 6 18" /><path d="m6 6 12 12" /></svg>
+            </button>
+            <Link to={storefront.homePopup.link || "/shop"} onClick={() => setShowPopup(false)} className="block relative group">
+              <img src={storefront.homePopup.image} alt="Promotion" className="w-full h-auto object-cover max-h-[70vh]" />
+              <div className="absolute inset-0 bg-black/0 group-hover:bg-black/5 transition-colors" />
+            </Link>
+          </div>
+        </div>
+      )}
+
+      <main className="flex-1 w-full max-w-7xl mx-auto md:px-6 lg:px-8 pb-20 md:pb-8 flex flex-col space-y-6 md:space-y-12 bg-white min-h-screen relative shadow-sm">
         {(loadingStorefront || loadingProducts) ? (
           <div className="flex justify-center items-center h-[60vh]">
             <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600"></div>
@@ -176,7 +200,7 @@ export default function HomePage() {
           <>
             {/* ─── HERO SLIDER ─── */}
             {getSectionEnabled('heroSlider') && slides.length > 0 && (
-              <section className="px-4 pt-4 md:px-8 md:pt-8 pb-4">
+              <section className="px-4 pt-2 md:px-8 md:pt-4 pb-2 md:pb-4">
                 <div className="relative w-full aspect-[1931/814] group">
                   {/* Inner Banner Container (Clips images) */}
                   <div className="absolute inset-0 overflow-hidden rounded-2xl md:rounded-3xl shadow-md">
@@ -185,57 +209,57 @@ export default function HomePage() {
                       className="flex h-full transition-transform duration-500 ease-in-out"
                       style={{ transform: `translateX(-${currentSlide * 100}%)` }}
                     >
-                    {slides.map((slide: any, idx: number) => (
-                      <Link to={slide.link || "/shop"} key={idx} className="w-full flex-shrink-0 flex h-full relative group block">
-                        {/* Background Image */}
-                        <img src={slide.image} alt={slide.title} className="absolute inset-0 w-full h-full object-cover" />
+                      {slides.map((slide: any, idx: number) => (
+                        <Link to={slide.link || "/shop"} key={idx} className="w-full flex-shrink-0 flex h-full relative group block">
+                          {/* Background Image */}
+                          <img src={slide.image} alt={slide.title} className="absolute inset-0 w-full h-full object-cover" />
 
-                        {/* Content (Left aligned) */}
-                        <div className="relative z-10 w-full md:w-3/5 h-full flex flex-col justify-center px-6 md:px-12 py-8">
-                          {slide.decorations && (
-                            <>
-                              <div className="absolute top-[-12px] right-[-12px] w-20 h-20 opacity-20 pointer-events-none">
-                                <svg viewBox="0 0 100 100" className="fill-white">
-                                  <path d="M50 0 C70 20, 100 50, 50 100 C30 80, 0 50, 50 0" />
-                                </svg>
-                              </div>
-                            </>
-                          )}
+                          {/* Content (Left aligned) */}
+                          <div className="relative z-10 w-full md:w-3/5 h-full flex flex-col justify-center px-6 md:px-12 py-8">
+                            {slide.decorations && (
+                              <>
+                                <div className="absolute top-[-12px] right-[-12px] w-20 h-20 opacity-20 pointer-events-none">
+                                  <svg viewBox="0 0 100 100" className="fill-white">
+                                    <path d="M50 0 C70 20, 100 50, 50 100 C30 80, 0 50, 50 0" />
+                                  </svg>
+                                </div>
+                              </>
+                            )}
 
-                          {(() => {
-                            const logosList = (typeof slide.logos === 'string' ? slide.logos.split(',') : slide.logos || []).filter((l: string) => l.trim() !== '');
-                            return logosList.length > 0 ? (
-                              <div className="flex flex-wrap gap-2 mb-4">
-                                {logosList.map((logo: string, i: number) => (
-                                  <span key={i} className="bg-white/20 backdrop-blur-md border border-white/20 px-3 py-1 rounded-full text-[10px] md:text-[11px] font-black text-white uppercase tracking-wider shadow-sm">
-                                    {logo.trim()}
-                                  </span>
-                                ))}
-                              </div>
-                            ) : null;
-                          })()}
-                          <p className="text-[13px] md:text-base text-white/90 font-semibold mb-1 md:mb-2">{slide.title}</p>
-                          <h1 className="text-[26px] md:text-5xl font-black text-white tracking-tight leading-none drop-shadow-lg">{slide.discount}</h1>
-                        </div>
-                      </Link>
-                    ))}
-                  </div>
+                            {(() => {
+                              const logosList = (typeof slide.logos === 'string' ? slide.logos.split(',') : slide.logos || []).filter((l: string) => l.trim() !== '');
+                              return logosList.length > 0 ? (
+                                <div className="flex flex-wrap gap-2 mb-4">
+                                  {logosList.map((logo: string, i: number) => (
+                                    <span key={i} className="bg-white/20 backdrop-blur-md border border-white/20 px-3 py-1 rounded-full text-[10px] md:text-[11px] font-black text-white uppercase tracking-wider shadow-sm">
+                                      {logo.trim()}
+                                    </span>
+                                  ))}
+                                </div>
+                              ) : null;
+                            })()}
+                            <p className="text-[13px] md:text-base text-white/90 font-semibold mb-1 md:mb-2">{slide.title}</p>
+                            <h1 className="text-[26px] md:text-5xl font-black text-white tracking-tight leading-none drop-shadow-lg">{slide.discount}</h1>
+                          </div>
+                        </Link>
+                      ))}
+                    </div>
                   </div>
 
                   {/* Navigation Arrows (Straddling the edges) */}
-                  <button 
+                  <button
                     onClick={(e) => { e.preventDefault(); setCurrentSlide(prev => (prev === 0 ? slides.length - 1 : prev - 1)); }}
-                    className="absolute left-0 top-1/2 -translate-y-1/2 -translate-x-1/2 w-8 h-8 md:w-10 md:h-10 bg-white rounded-full flex items-center justify-center shadow-md z-10 text-slate-700 hover:text-slate-900 hover:bg-gray-50 transition-colors"
+                    className="hidden md:flex absolute left-0 top-1/2 -translate-y-1/2 -translate-x-1/2 w-10 h-10 bg-white rounded-full items-center justify-center shadow-md z-10 text-slate-700 hover:text-slate-900 hover:bg-gray-50 transition-colors"
                     aria-label="Previous slide"
                   >
-                    <ChevronLeft className="w-5 h-5 md:w-6 md:h-6" />
+                    <ChevronLeft className="w-4 h-4 md:w-6 md:h-6" />
                   </button>
-                  <button 
+                  <button
                     onClick={(e) => { e.preventDefault(); setCurrentSlide(prev => (prev === slides.length - 1 ? 0 : prev + 1)); }}
-                    className="absolute right-0 top-1/2 -translate-y-1/2 translate-x-1/2 w-8 h-8 md:w-10 md:h-10 bg-white rounded-full flex items-center justify-center shadow-md z-10 text-slate-700 hover:text-slate-900 hover:bg-gray-50 transition-colors"
+                    className="hidden md:flex absolute right-0 top-1/2 -translate-y-1/2 translate-x-1/2 w-10 h-10 bg-white rounded-full items-center justify-center shadow-md z-10 text-slate-700 hover:text-slate-900 hover:bg-gray-50 transition-colors"
                     aria-label="Next slide"
                   >
-                    <ChevronRight className="w-5 h-5 md:w-6 md:h-6" />
+                    <ChevronRight className="w-4 h-4 md:w-6 md:h-6" />
                   </button>
 
                   {/* Dot indicators (Straddling the bottom edge) */}
@@ -255,10 +279,10 @@ export default function HomePage() {
 
             {/* ─── SHOP BY CATEGORY ─── */}
             {getSectionEnabled('shopByCategory') && (
-              <section className="px-4 md:px-6 py-6 md:py-10 max-w-7xl mx-auto">
-                <div className="flex justify-between items-center mb-6">
-                  <h2 className="text-xl md:text-2xl font-bold text-slate-900 tracking-tight">{storefront?.sectionConfig?.shopByCategory?.title || 'Categories'}</h2>
-                  <Link to="/categories" className="flex items-center gap-1 text-sm font-semibold text-emerald-600 hover:text-emerald-700 transition-colors">
+              <section className="px-4 md:px-6 py-3 md:py-5 w-full max-w-7xl mx-auto">
+                <div className="flex justify-between items-center mb-6 w-full">
+                  <h2 className="text-base md:text-lg font-bold text-slate-900 tracking-tight">{storefront?.sectionConfig?.shopByCategory?.title || 'Categories'}</h2>
+                  <Link to="/categories" className="flex items-center gap-1 text-sm font-semibold text-emerald-600 hover:text-emerald-700 transition-colors shrink-0">
                     See All
                   </Link>
                 </div>
@@ -272,7 +296,7 @@ export default function HomePage() {
                     { name: 'Watch', image: 'https://images.unsplash.com/photo-1524592094714-0f0654e20314?w=600', label: 'Watches' }
                   ];
                   return (
-                    <div className="flex justify-between items-start gap-2 md:gap-6 w-full max-w-4xl mx-auto">
+                    <div className="flex justify-between items-start gap-2 md:gap-6 w-full max-w-6xl mx-auto">
                       {categoriesList.slice(0, 5).map((cat: any, i: number) => (
                         <CategoryIcon key={i} cat={cat} i={i} />
                       ))}
@@ -287,9 +311,9 @@ export default function HomePage() {
               const ProductSection = ({ title, products, link, linkText, scrollRef }: any) => {
                 if (products.length === 0) return null;
                 return (
-                  <section className="px-4 md:px-6 py-5 md:py-8 border-t border-slate-100">
+                  <section className="px-4 md:px-6 py-3 md:py-5 border-t border-slate-100">
                     <div className="flex justify-between items-center mb-5">
-                      <h2 className="text-lg md:text-2xl font-bold text-slate-900 tracking-tight">{title}</h2>
+                      <h2 className="text-base md:text-lg font-bold text-slate-900 tracking-tight">{title}</h2>
                       <Link to={link} className="flex items-center gap-1 text-xs font-semibold text-indigo-600 hover:text-indigo-800 border border-indigo-200 hover:border-indigo-400 px-3 py-1.5 rounded-full transition-all">
                         {linkText} <ArrowRight className="w-3 h-3" />
                       </Link>
@@ -308,7 +332,7 @@ export default function HomePage() {
 
                         return (
                           <Link
-                            to={`/product/${product.id}`}
+                            to={getProductUrl(product)}
                             key={product.id}
                             className="group flex flex-col bg-white rounded-2xl overflow-hidden shadow-[0_2px_12px_-4px_rgba(0,0,0,0.08)] border border-slate-100 md:hover:shadow-[0_8px_24px_-8px_rgba(0,0,0,0.12)] transition-all duration-300 md:hover:-translate-y-1"
                           >
@@ -357,13 +381,13 @@ export default function HomePage() {
                     if (trendingProducts.length === 0) return null;
                     const badges = ['🔥 Hot', '⚡ Fast', '💎 Top', '🌟 Pick', '🎯 Deal', '✨ New'];
                     return (
-                      <section className="border-t border-slate-100 py-6 md:py-10">
+                      <section className="border-t border-slate-100 py-3 md:py-5">
                         {/* Header */}
                         <div className="flex justify-between items-center mb-5 md:mb-7 px-4 md:px-6">
                           <div className="flex items-center gap-2">
                             <span className="text-2xl">🔥</span>
                             <div>
-                              <h2 className="text-lg md:text-2xl font-black text-slate-900 tracking-tight leading-none">Trending Now</h2>
+                              <h2 className="text-base md:text-lg font-black text-slate-900 tracking-tight leading-none">Trending Now</h2>
                               <p className="text-[10px] md:text-xs text-slate-400 font-medium mt-0.5 hidden md:block">Most loved picks this week</p>
                             </div>
                           </div>
@@ -378,7 +402,7 @@ export default function HomePage() {
                             {[...trendingProducts, ...trendingProducts].map((product: any, idx: number) => (
                               <Link
                                 key={`${product.id}-${idx}`}
-                                to={`/product/${product.id}`}
+                                to={getProductUrl(product)}
                                 className="group flex-none w-[38vw] md:w-64 rounded-2xl overflow-hidden bg-white shadow-[0_4px_20px_-6px_rgba(0,0,0,0.1)] border border-slate-100 relative hover:-translate-y-1 transition-all duration-300"
                               >
                                 {/* Tall image */}
@@ -424,22 +448,22 @@ export default function HomePage() {
 
                   {/* ─── FLASH SALE ─── */}
                   {storefront?.flashSale?.enabled && !flashCountdown.expired && (storefront.flashSale.products || []).length > 0 && (
-                    <section className="px-4 md:px-6 py-4 md:py-10 border-t border-slate-100">
+                    <section className="px-4 md:px-6 py-3 md:py-5 border-t border-slate-100">
                       <div className="flex flex-col md:flex-row md:items-stretch gap-3 md:gap-0 bg-white/70 backdrop-blur-3xl rounded-xl md:rounded-3xl overflow-hidden p-3 md:p-0 shadow-[0_8px_32px_rgba(0,0,0,0.04)] border border-white/80 relative">
                         {/* Luxury Background Glow */}
                         <div className="absolute top-1/2 left-1/4 w-96 h-96 bg-amber-500/10 rounded-full blur-[100px] pointer-events-none -translate-y-1/2" />
 
                         {/* ── LEFT PANEL (Luxury Premium) ── */}
                         <div className="md:w-64 lg:w-80 flex-shrink-0 p-4 md:p-10 flex flex-col justify-center relative z-10 border-b md:border-b-0 md:border-r border-slate-200/50">
-                          
+
                           {/* Header & Countdown */}
                           <div className="flex justify-between items-center md:flex-col md:items-start mb-4 md:mb-0">
-                            
+
                             <div className="flex flex-col items-start">
                               <span className="inline-block text-[8px] md:text-[10px] font-semibold text-amber-700 uppercase tracking-[0.3em] bg-amber-50 px-2.5 py-1 md:px-3 md:py-1.5 rounded-sm w-max mb-3 md:mb-5 border border-amber-200 shadow-sm">
                                 Exclusive Offer
                               </span>
-                              <h2 className="text-3xl md:text-5xl font-serif italic text-transparent bg-clip-text bg-gradient-to-r from-amber-600 via-yellow-600 to-amber-800 leading-tight mb-1 md:mb-3 tracking-wide">
+                              <h2 className="text-2xl md:text-4xl font-serif italic text-transparent bg-clip-text bg-gradient-to-r from-amber-600 via-yellow-600 to-amber-800 leading-tight mb-1 md:mb-3 tracking-wide">
                                 {storefront.flashSale.title || 'Flash Sale'}
                               </h2>
                               <p className="hidden md:block text-sm text-slate-600 font-serif italic mb-8 leading-relaxed max-w-[220px]">
@@ -473,8 +497,8 @@ export default function HomePage() {
 
                         {/* ── RIGHT PANEL: Product cards (Slider) ── */}
                         <div className="flex-1 min-w-0 md:bg-slate-50/50 md:p-6 lg:p-10 flex items-center relative group z-10 overflow-hidden">
-                          <div 
-                            className="flex gap-4 md:gap-6 w-max animate-marquee hover:[animation-play-state:paused] pb-4 md:pb-0" 
+                          <div
+                            className="flex gap-4 md:gap-6 w-max animate-marquee hover:[animation-play-state:paused] pb-4 md:pb-0"
                           >
                             {[...(storefront.flashSale.products || []), ...(storefront.flashSale.products || [])].map((item: any, idx: number) => (
                               <Link
@@ -490,7 +514,7 @@ export default function HomePage() {
                                     className="w-full h-full object-cover md:group-hover:scale-105 group-hover:opacity-90 transition-all duration-700 ease-in-out"
                                   />
                                   <div className="absolute inset-0 bg-gradient-to-t from-white/90 via-transparent to-transparent opacity-80" />
-                                  
+
                                   {/* Wishlist Button */}
                                   <button
                                     className={`absolute top-2 right-2 md:top-3 md:right-3 w-8 h-8 md:w-9 md:h-9 rounded-full bg-white/90 backdrop-blur-sm flex items-center justify-center shadow-sm z-10 ${wishlist.includes(item.id) ? 'text-rose-500' : 'text-slate-400'}`}
@@ -516,7 +540,7 @@ export default function HomePage() {
                                   </div>
                                   {/* Stars */}
                                   <div className="flex items-center gap-1">
-                                    {[1,2,3,4,5].map(s => (
+                                    {[1, 2, 3, 4, 5].map(s => (
                                       <Star key={s} className={`w-2.5 h-2.5 md:w-3 md:h-3 ${s <= Math.round(item.rating || 4.5) ? 'fill-amber-400 text-amber-400' : 'fill-slate-200 text-slate-200'}`} />
                                     ))}
                                     <span className="text-[9px] md:text-[10px] text-slate-500 font-medium ml-1">({item.reviews || 0})</span>
@@ -531,26 +555,26 @@ export default function HomePage() {
                   )}
 
                   {/* ─── SPECIAL OFFER BANNER ─── */}
-                  <section className="px-4 md:px-6 pb-6 md:pb-8">
+                  <section className="px-4 md:px-6 pb-3 md:pb-5">
                     <Link to="/shop">
                       <div className="relative w-full rounded-2xl md:rounded-3xl overflow-hidden bg-[#f4f2ef] shadow-sm hover:shadow-md transition-shadow group flex items-center min-h-[180px] sm:min-h-[220px] md:h-64">
                         {/* Background Image Container */}
                         <div className="absolute inset-0 w-full h-full md:left-1/4 md:w-3/4 flex justify-end">
-                          {/* Gradient mask to blend the image seamlessly into the left background */}
+                          {/* Gradient mask */}
                           <div className="absolute inset-0 bg-gradient-to-r from-[#f4f2ef] via-[#f4f2ef]/90 to-transparent z-10 w-4/5 md:w-1/2"></div>
                           <img
                             src="https://images.unsplash.com/photo-1469334031218-e382a71b716b?q=80&w=1200&auto=format&fit=crop"
-                            className="w-[85%] md:w-full h-full object-cover object-[70%_top] md:object-top opacity-90 group-hover:scale-105 transition-transform duration-700"
-                            alt="Summer Sale"
+                            className="w-[85%] md:w-full h-full object-cover object-[70%_top] md:object-top opacity-90 transition-opacity duration-300"
+                            alt="Special Offer"
                           />
                         </div>
 
                         {/* Text Content */}
                         <div className="relative z-20 flex flex-col justify-center h-full p-5 sm:p-8 md:p-12 w-[70%] sm:w-[60%] md:w-1/2">
-                          <p className="text-red-500 font-bold text-[9px] sm:text-[10px] md:text-xs tracking-[0.2em] uppercase mb-1.5 md:mb-3">Summer Sale</p>
-                          <h2 className="text-[22px] sm:text-3xl md:text-5xl font-black text-slate-900 leading-[1.1] mb-1.5 md:mb-3 tracking-tight">UP TO 60% OFF</h2>
+                          <p className="text-red-500 font-bold text-[9px] sm:text-[10px] md:text-xs tracking-[0.2em] uppercase mb-1.5 md:mb-3">SALE</p>
+                          <h2 className="text-[18px] sm:text-2xl md:text-3xl font-black text-slate-900 leading-[1.1] mb-1.5 md:mb-3 tracking-tight">Special Offer</h2>
                           <p className="text-[11px] sm:text-xs md:text-sm text-slate-600 font-medium mb-4 md:mb-6 leading-snug">
-                            Limited Time Offer.<br />Don't Miss Out!
+                            Limited Time Only.<br />Don't Miss Out!
                           </p>
 
                           <div className="inline-flex items-center justify-center gap-1.5 md:gap-2 bg-[#111] hover:bg-black text-white px-4 py-2 md:px-6 md:py-3 rounded-lg md:rounded-xl text-[11px] md:text-sm font-bold w-max shadow-sm transition-colors">
@@ -560,6 +584,7 @@ export default function HomePage() {
                       </div>
                     </Link>
                   </section>
+
 
                   <ProductSection
                     title="✨ New Arrivals"
@@ -600,7 +625,7 @@ export default function HomePage() {
                                 {banner.badge}
                               </p>
                             )}
-                            <h2 style={{ color: banner.textColor || '#000000' }} className="text-[22px] sm:text-3xl md:text-5xl font-black leading-[1.1] mb-1 md:mb-2 tracking-tight">
+                            <h2 style={{ color: banner.textColor || '#000000' }} className="text-[18px] sm:text-2xl md:text-3xl font-black leading-[1.1] mb-1 md:mb-2 tracking-tight">
                               {banner.title}
                             </h2>
                             {banner.subtitle && (

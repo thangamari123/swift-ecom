@@ -2,6 +2,7 @@ import { Navbar } from '@/components/Navbar';
 import { BottomNav } from '@/components/BottomNav';
 import { useStore } from '@/lib/store';
 import { Trash2, ChevronLeft, ShoppingCart } from 'lucide-react';
+import { getProductUrl } from '@/utils/slug';
 import { Link, useNavigate } from 'react-router-dom';
 
 export default function CartPage() {
@@ -71,7 +72,7 @@ export default function CartPage() {
                   </div>
                   <div className="ml-4 flex-1 flex flex-col justify-between py-1">
                     <div className="pr-8">
-                      <Link to={`/product/${item.productId}`}>
+                      <Link to={getProductUrl({ id: item.productId, slug: item.productSlug, name: item.name })}>
                         <h3 className="text-sm font-semibold text-slate-900 mb-1 leading-tight line-clamp-2">
                           {item.name}
                         </h3>

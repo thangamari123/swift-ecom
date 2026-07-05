@@ -8,6 +8,7 @@ import { useParams, useNavigate, Link } from 'react-router-dom';
 import { useStore } from '@/lib/store';
 import { toast } from 'react-toastify';
 import { Heart, ChevronLeft, Share2, Star, ShoppingCart } from 'lucide-react';
+import { generateSlug, getProductUrl } from '@/utils/slug';
 
 interface Product {
   id: string;
@@ -19,6 +20,7 @@ interface Product {
   sizes?: string[];
   category: string;
   stock: number;
+  slug?: string;
 }
 
 interface Review {
@@ -30,7 +32,7 @@ interface Review {
 }
 
 export default function ProductDetailsPage() {
-  const unwrappedParams = useParams() as { id: string };
+  const unwrappedParams = useParams() as { id: string; slug?: string };
   const navigate = useNavigate();
   const [product, setProduct] = useState<Product | null>(null);
   const [loading, setLoading] = useState(true);
@@ -56,6 +58,14 @@ export default function ProductDetailsPage() {
     const unsubscribeProduct = onSnapshot(docRef, (docSnap) => {
       if (docSnap.exists()) {
         const productData = { id: docSnap.id, ...docSnap.data() } as Product;
+        
+        // Canonical SEO Redirect
+        const canonicalSlug = productData.slug || generateSlug(productData.name);
+        if (unwrappedParams.slug !== canonicalSlug) {
+          navigate(`/product/${canonicalSlug}/${productData.id}`, { replace: true });
+          return;
+        }
+
         setProduct(productData);
         if (productData.sizes && productData.sizes.length > 0) {
           setSelectedSize(productData.sizes[0]);
@@ -227,7 +237,59 @@ export default function ProductDetailsPage() {
     : '4.8';
 
   return (
-    <div className="min-h-screen bg-white md:pb-0">
+    <div className="bg-white min-h-screen font-sans pb-20 md:pb-0">
+      {product && (
+        <>
+          <title>{product.name} | SwiftStore</title>
+          <meta name="description" content={product.description.substring(0, 150)} />
+          <link rel="canonical" href={`${window.location.origin}/product/${product.slug || generateSlug(product.name)}/${product.id}`} />
+          <meta property="og:title" content={product.name} />
+          <meta property="og:image" content={product.imageUrl} />
+          <meta property="og:description" content={product.description.substring(0, 150)} />
+          <meta name="twitter:card" content="summary_large_image" />
+          <script type="application/ld+json">
+            {JSON.stringify({
+              "@context": "https://schema.org/",
+              "@type": "Product",
+              "name": product.name,
+              "image": [product.imageUrl, ...(product.images || [])],
+              "description": product.description,
+              "sku": product.id,
+              "category": product.category,
+              "offers": {
+                "@type": "Offer",
+                "url": `${window.location.origin}/product/${product.slug || generateSlug(product.name)}/${product.id}`,
+                "priceCurrency": "INR",
+                "price": product.price,
+                "availability": product.stock > 0 ? "https://schema.org/InStock" : "https://schema.org/OutOfStock",
+                "itemCondition": "https://schema.org/NewCondition"
+              }
+            })}
+          </script>
+          <script type="application/ld+json">
+            {JSON.stringify({
+              "@context": "https://schema.org",
+              "@type": "BreadcrumbList",
+              "itemListElement": [{
+                "@type": "ListItem",
+                "position": 1,
+                "name": "Home",
+                "item": window.location.origin
+              }, {
+                "@type": "ListItem",
+                "position": 2,
+                "name": product.category,
+                "item": `${window.location.origin}/category/${product.category}`
+              }, {
+                "@type": "ListItem",
+                "position": 3,
+                "name": product.name,
+                "item": `${window.location.origin}/product/${product.slug || generateSlug(product.name)}/${product.id}`
+              }]
+            })}
+          </script>
+        </>
+      )}
       <div className="hidden md:block">
         <Navbar />
       </div>
@@ -567,7 +629,7 @@ export default function ProductDetailsPage() {
               {relatedProducts.map((p) => (
                 <Link
                   key={p.id}
-                  to={`/product/${p.id}`}
+                  to={getProductUrl(p)}
                   className="group flex-none w-[40vw] md:w-auto snap-start flex flex-col bg-white rounded-2xl overflow-hidden border border-slate-100 shadow-[0_2px_10px_-4px_rgba(0,0,0,0.05)] hover:shadow-lg transition-all duration-300 md:hover:-translate-y-1"
                 >
                   <div className="relative aspect-[4/5] bg-[#f8f9fa] flex items-center justify-center overflow-hidden p-4">

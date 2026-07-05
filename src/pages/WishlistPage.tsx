@@ -6,6 +6,7 @@ import { db } from '@/lib/firebase';
 import { doc, getDoc } from 'firebase/firestore';
 import { Link, useNavigate } from 'react-router-dom';
 import { Trash2, ChevronLeft, MoreVertical } from 'lucide-react';
+import { getProductUrl } from '@/utils/slug';
 import { toast } from 'react-toastify';
 
 export default function WishlistPage() {
@@ -126,7 +127,7 @@ export default function WishlistPage() {
           <div className="px-4 py-2 space-y-4 md:grid md:grid-cols-2 lg:grid-cols-4 md:gap-6 md:space-y-0">
             {products.map(product => (
               <div key={product.id} className="bg-white rounded-2xl md:border md:border-slate-100 md:shadow-sm flex md:flex-col items-center relative py-2 border-b border-slate-50 md:border-b-slate-100">
-                <Link to={`/product/${product.id}`} className="shrink-0">
+                <Link to={getProductUrl(product)} className="shrink-0">
                   <div className="w-24 h-24 md:w-full md:h-auto md:aspect-square bg-[#f8f9fa] rounded-2xl flex items-center justify-center p-3">
                     <img
                       src={product.imageUrl || `https://picsum.photos/seed/${product.id}/400/400`}
@@ -137,7 +138,7 @@ export default function WishlistPage() {
                   </div>
                 </Link>
                 <div className="pl-4 pr-10 py-1 flex-1 md:p-4 md:w-full md:pr-4 relative">
-                  <Link to={`/product/${product.id}`}>
+                  <Link to={getProductUrl(product)}>
                     <h3 className="text-sm font-semibold text-slate-900 truncate mb-1">{product.name}</h3>
                   </Link>
                   <div className="font-bold text-[15px] text-slate-900 mb-3">

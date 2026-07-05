@@ -120,6 +120,7 @@ export default function App() {
         <Route path="/reels" element={<ReelsPage />} />
         <Route path="/categories" element={<CategoriesPage />} />
         <Route path="/category/:categoryName" element={<CategoryPage />} />
+        <Route path="/product/:slug/:id" element={<ProductDetailsPage />} />
         <Route path="/product/:id" element={<ProductDetailsPage />} />
         <Route path="/cart" element={<CartPage />} />
         <Route path="/checkout" element={<CustomerRoute><CheckoutPage /></CustomerRoute>} />

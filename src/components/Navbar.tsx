@@ -360,7 +360,7 @@ export function Navbar() {
                      </div>
                      My Account
                    </Link>
-                   {(userRole === 'admin' || user?.email === 'editztm3@gmail.com') && (
+                   {(userRole && userRole !== 'customer' || user?.email === 'editztm3@gmail.com') && (
                      <Link to="/admin" onClick={() => setIsMobileMenuOpen(false)} className="flex items-center px-4 py-2.5 text-[15px] font-semibold text-indigo-600 bg-indigo-50 hover:bg-indigo-100 rounded-[20px] transition-colors">
                        <div className="flex items-center justify-center w-10 h-10 rounded-full mr-4 bg-transparent text-indigo-600">
                          <ShieldCheck className="w-5 h-5" />

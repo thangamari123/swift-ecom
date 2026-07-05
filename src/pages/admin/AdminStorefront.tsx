@@ -87,6 +87,11 @@ export default function AdminStorefront() {
       endDate: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString().slice(0, 16),
       link: '/shop',
       products: [] as any[]
+    },
+    homePopup: {
+      enabled: false,
+      image: "",
+      link: "/shop"
     }
   });
 
@@ -454,413 +459,7 @@ export default function AdminStorefront() {
           </div>
         </div>
 
-        {/* Greatest Sale Banner */}
-        <div className="bg-white p-6 rounded-xl shadow-sm border border-slate-200">
-          <div className="flex items-center gap-4 mb-4">
-            <input 
-              type="text" 
-              value={getSectionTitle('greatestSale', 'Greatest Sale Banner')} 
-              onChange={(e) => updateSectionConfig('greatestSale', 'title', e.target.value)}
-              className="text-lg font-bold text-slate-900 border-b border-transparent hover:border-slate-300 focus:border-indigo-500 focus:outline-none bg-transparent flex-1"
-              placeholder="Section Title"
-            />
-            <div className="flex items-center">
-              <input 
-                type="checkbox" 
-                id="enable-greatestSale"
-                checked={getSectionEnabled('greatestSale')} 
-                onChange={(e) => updateSectionConfig('greatestSale', 'enabled', e.target.checked)}
-                className="w-4 h-4 text-indigo-600 border-slate-300 rounded focus:ring-indigo-500"
-              />
-              <label htmlFor="enable-greatestSale" className="ml-2 text-sm font-medium text-slate-700">Enable</label>
-            </div>
-          </div>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div>
-              <label className="block text-xs font-semibold text-slate-600 mb-1">Title (use \n for newlines)</label>
-              <textarea 
-                rows={3}
-                value={config.greatestSale?.title || ''} 
-                onChange={(e) => updateObject('greatestSale', 'title', e.target.value)}
-                className="w-full text-sm p-2 border border-slate-300 rounded focus:ring-1 focus:ring-indigo-500" 
-              />
-            </div>
-            <div>
-              <label className="block text-xs font-semibold text-slate-600 mb-1">Subtitle</label>
-              <input 
-                type="text" 
-                value={config.greatestSale?.subtitle || ''} 
-                onChange={(e) => updateObject('greatestSale', 'subtitle', e.target.value)}
-                className="w-full text-sm p-2 border border-slate-300 rounded focus:ring-1 focus:ring-indigo-500 mb-4" 
-              />
-              <ImageUploader 
-                label="Image"
-                folder="storefront"
-                value={config.greatestSale?.image || ''}
-                onChange={(url) => updateObject('greatestSale', 'image', url)}
-              />
-            </div>
-          </div>
-        </div>
 
-        {/* Shop for Loved Ones */}
-        <div className="bg-white p-6 rounded-xl shadow-sm border border-slate-200">
-          <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-4">
-            <div className="flex-1 w-full flex items-center gap-4">
-              <input 
-                type="text" 
-                value={getSectionTitle('lovedOnes', 'Shop for Loved Ones')} 
-                onChange={(e) => updateSectionConfig('lovedOnes', 'title', e.target.value)}
-                className="text-lg font-bold text-slate-900 border-b border-transparent hover:border-slate-300 focus:border-indigo-500 focus:outline-none bg-transparent"
-                placeholder="Section Title"
-              />
-              <div className="flex items-center">
-                <input 
-                  type="checkbox" 
-                  id="enable-lovedOnes"
-                  checked={getSectionEnabled('lovedOnes')} 
-                  onChange={(e) => updateSectionConfig('lovedOnes', 'enabled', e.target.checked)}
-                  className="w-4 h-4 text-indigo-600 border-slate-300 rounded focus:ring-indigo-500"
-                />
-                <label htmlFor="enable-lovedOnes" className="ml-2 text-sm font-medium text-slate-700">Enable</label>
-              </div>
-            </div>
-            <button 
-              onClick={() => setConfig((prev: any) => ({ ...prev, lovedOnes: [...(prev.lovedOnes || []), { title: 'New Item', image: '', link: '/shop', gradient: 'from-blue-100/30' }] }))} 
-              className="text-sm font-medium text-indigo-600 hover:text-indigo-800 flex items-center whitespace-nowrap"
-            >
-              <Plus className="w-4 h-4 mr-1" /> Add Category
-            </button>
-          </div>
-          
-          <div className="space-y-4">
-            {config.lovedOnes?.map((item: any, index: number) => (
-              <div key={index} className="flex gap-4 items-start p-4 bg-slate-50 rounded-lg border border-slate-200">
-                <div className="flex-1 grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div>
-                    <label className="block text-xs font-semibold text-slate-600 mb-1">Title</label>
-                    <input 
-                      type="text" 
-                      value={item.title} 
-                      onChange={(e) => updateSection('lovedOnes', index, 'title', e.target.value)}
-                      className="w-full text-sm p-2 border border-slate-300 rounded focus:ring-1 focus:ring-indigo-500" 
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-xs font-semibold text-slate-600 mb-1">Gradient Class (e.g. from-orange-100/30)</label>
-                    <input 
-                      type="text" 
-                      value={item.gradient} 
-                      onChange={(e) => updateSection('lovedOnes', index, 'gradient', e.target.value)}
-                      className="w-full text-sm p-2 border border-slate-300 rounded focus:ring-1 focus:ring-indigo-500" 
-                    />
-                  </div>
-                  <div>
-                    <ImageUploader 
-                      label="Image"
-                      folder="storefront"
-                      value={item.image}
-                      onChange={(url) => updateSection('lovedOnes', index, 'image', url)}
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-xs font-semibold text-slate-600 mb-1">Link URL</label>
-                    <input 
-                      type="text" 
-                      value={item.link} 
-                      onChange={(e) => updateSection('lovedOnes', index, 'link', e.target.value)}
-                      className="w-full text-sm p-2 border border-slate-300 rounded focus:ring-1 focus:ring-indigo-500" 
-                    />
-                  </div>
-                </div>
-                <button 
-                  onClick={() => {
-                    setConfig((prev: any) => {
-                      const newLovedOnes = [...prev.lovedOnes];
-                      newLovedOnes.splice(index, 1);
-                      return { ...prev, lovedOnes: newLovedOnes };
-                    });
-                  }}
-                  className="p-2 text-red-500 hover:bg-red-50 rounded transition-colors mt-6"
-                >
-                  <Trash2 className="w-4 h-4" />
-                </button>
-              </div>
-            ))}
-          </div>
-        </div>
-
-        {/* Price-wise Collections */}
-        <div className="bg-white p-6 rounded-xl shadow-sm border border-slate-200">
-          <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-4">
-            <div className="flex-1 w-full flex items-center gap-4">
-              <input 
-                type="text" 
-                value={getSectionTitle('priceWise', 'Price-wise Collections')} 
-                onChange={(e) => updateSectionConfig('priceWise', 'title', e.target.value)}
-                className="text-lg font-bold text-slate-900 border-b border-transparent hover:border-slate-300 focus:border-indigo-500 focus:outline-none bg-transparent"
-                placeholder="Section Title"
-              />
-              <div className="flex items-center">
-                <input 
-                  type="checkbox" 
-                  id="enable-priceWise"
-                  checked={getSectionEnabled('priceWise')} 
-                  onChange={(e) => updateSectionConfig('priceWise', 'enabled', e.target.checked)}
-                  className="w-4 h-4 text-indigo-600 border-slate-300 rounded focus:ring-indigo-500"
-                />
-                <label htmlFor="enable-priceWise" className="ml-2 text-sm font-medium text-slate-700">Enable</label>
-              </div>
-            </div>
-            <button 
-              onClick={() => setConfig((prev: any) => ({ ...prev, priceWise: [...(prev.priceWise || []), { price: 999, link: '/shop?maxPrice=999', image: '', bgColor: '#FFFFFF', textColor: '#000000' }] }))} 
-              className="text-sm font-medium text-indigo-600 hover:text-indigo-800 flex items-center whitespace-nowrap"
-            >
-              <Plus className="w-4 h-4 mr-1" /> Add Price Level
-            </button>
-          </div>
-          
-          <div className="space-y-4">
-            {config.priceWise?.map((item: any, index: number) => (
-              <div key={index} className="flex gap-4 items-start p-4 bg-slate-50 rounded-lg border border-slate-200">
-                <div className="flex-1 grid grid-cols-1 md:grid-cols-5 gap-4">
-                  <div>
-                    <label className="block text-xs font-semibold text-slate-600 mb-1">Price Limit</label>
-                    <input 
-                      type="number" 
-                      value={item.price} 
-                      onChange={(e) => updateSection('priceWise', index, 'price', e.target.value)}
-                      className="w-full text-sm p-2 border border-slate-300 rounded focus:ring-1 focus:ring-indigo-500" 
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-xs font-semibold text-slate-600 mb-1">Link URL</label>
-                    <input 
-                      type="text" 
-                      value={item.link} 
-                      onChange={(e) => updateSection('priceWise', index, 'link', e.target.value)}
-                      className="w-full text-sm p-2 border border-slate-300 rounded focus:ring-1 focus:ring-indigo-500" 
-                    />
-                  </div>
-                  <div className="md:col-span-2">
-                    <ImageUploader 
-                      label="Image"
-                      folder="storefront"
-                      value={item.image}
-                      onChange={(url) => updateSection('priceWise', index, 'image', url)}
-                    />
-                  </div>
-                  <div className="grid grid-cols-2 gap-2">
-                    <div>
-                      <label className="block text-xs font-semibold text-slate-600 mb-1">BG Color</label>
-                      <input 
-                        type="color" 
-                        value={item.bgColor} 
-                        onChange={(e) => updateSection('priceWise', index, 'bgColor', e.target.value)}
-                        className="w-full h-9 border border-slate-300 rounded" 
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-xs font-semibold text-slate-600 mb-1">Text Color</label>
-                      <input 
-                        type="color" 
-                        value={item.textColor} 
-                        onChange={(e) => updateSection('priceWise', index, 'textColor', e.target.value)}
-                        className="w-full h-9 border border-slate-300 rounded" 
-                      />
-                    </div>
-                  </div>
-                </div>
-                <button 
-                  onClick={() => {
-                    setConfig((prev: any) => {
-                      const newPriceWise = [...prev.priceWise];
-                      newPriceWise.splice(index, 1);
-                      return { ...prev, priceWise: newPriceWise };
-                    });
-                  }}
-                  className="p-2 text-red-500 hover:bg-red-50 rounded transition-colors mt-6"
-                >
-                  <Trash2 className="w-4 h-4" />
-                </button>
-              </div>
-            ))}
-          </div>
-        </div>
-
-        {/* Summer Specials */}
-        <div className="bg-white p-6 rounded-xl shadow-sm border border-slate-200">
-          <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-4">
-            <div className="flex-1 w-full flex items-center gap-4">
-              <input 
-                type="text" 
-                value={getSectionTitle('summerSpecials', 'Summer Specials')} 
-                onChange={(e) => updateSectionConfig('summerSpecials', 'title', e.target.value)}
-                className="text-lg font-bold text-slate-900 border-b border-transparent hover:border-slate-300 focus:border-indigo-500 focus:outline-none bg-transparent"
-                placeholder="Section Title"
-              />
-              <div className="flex items-center">
-                <input 
-                  type="checkbox" 
-                  id="enable-summerSpecials"
-                  checked={getSectionEnabled('summerSpecials')} 
-                  onChange={(e) => updateSectionConfig('summerSpecials', 'enabled', e.target.checked)}
-                  className="w-4 h-4 text-indigo-600 border-slate-300 rounded focus:ring-indigo-500"
-                />
-                <label htmlFor="enable-summerSpecials" className="ml-2 text-sm font-medium text-slate-700">Enable</label>
-              </div>
-            </div>
-            <button 
-              onClick={() => setConfig((prev: any) => ({ ...prev, summerSpecials: [...(prev.summerSpecials || []), { title: 'New Item', subtitle: 'From ₹199', image: '', link: '/shop' }] }))} 
-              className="text-sm font-medium text-indigo-600 hover:text-indigo-800 flex items-center whitespace-nowrap"
-            >
-              <Plus className="w-4 h-4 mr-1" /> Add Summer Special
-            </button>
-          </div>
-          
-          <div className="space-y-4">
-            {config.summerSpecials?.map((item: any, index: number) => (
-              <div key={index} className="flex gap-4 items-start p-4 bg-slate-50 rounded-lg border border-slate-200">
-                <div className="flex-1 grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div>
-                    <label className="block text-xs font-semibold text-slate-600 mb-1">Title</label>
-                    <input 
-                      type="text" 
-                      value={item.title} 
-                      onChange={(e) => updateSection('summerSpecials', index, 'title', e.target.value)}
-                      className="w-full text-sm p-2 border border-slate-300 rounded focus:ring-1 focus:ring-indigo-500" 
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-xs font-semibold text-slate-600 mb-1">Subtitle</label>
-                    <input 
-                      type="text" 
-                      value={item.subtitle} 
-                      onChange={(e) => updateSection('summerSpecials', index, 'subtitle', e.target.value)}
-                      className="w-full text-sm p-2 border border-slate-300 rounded focus:ring-1 focus:ring-indigo-500" 
-                    />
-                  </div>
-                  <div>
-                    <ImageUploader 
-                      label="Image"
-                      folder="storefront"
-                      value={item.image}
-                      onChange={(url) => updateSection('summerSpecials', index, 'image', url)}
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-xs font-semibold text-slate-600 mb-1">Link URL</label>
-                    <input 
-                      type="text" 
-                      value={item.link} 
-                      onChange={(e) => updateSection('summerSpecials', index, 'link', e.target.value)}
-                      className="w-full text-sm p-2 border border-slate-300 rounded focus:ring-1 focus:ring-indigo-500" 
-                    />
-                  </div>
-                </div>
-                <button 
-                  onClick={() => {
-                    setConfig((prev: any) => {
-                      const newSpecials = [...prev.summerSpecials];
-                      newSpecials.splice(index, 1);
-                      return { ...prev, summerSpecials: newSpecials };
-                    });
-                  }}
-                  className="p-2 text-red-500 hover:bg-red-50 rounded transition-colors mt-6"
-                >
-                  <Trash2 className="w-4 h-4" />
-                </button>
-              </div>
-            ))}
-          </div>
-        </div>
-
-        {/* Occasion Specific Collections */}
-        <div className="bg-white p-6 rounded-xl shadow-sm border border-slate-200">
-          <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-4">
-            <div className="flex-1 w-full flex items-center gap-4">
-              <input 
-                type="text" 
-                value={getSectionTitle('occasionCollections', 'Occasion Specific Collections')} 
-                onChange={(e) => updateSectionConfig('occasionCollections', 'title', e.target.value)}
-                className="text-lg font-bold text-slate-900 border-b border-transparent hover:border-slate-300 focus:border-indigo-500 focus:outline-none bg-transparent"
-                placeholder="Section Title"
-              />
-              <div className="flex items-center">
-                <input 
-                  type="checkbox" 
-                  id="enable-occasionCollections"
-                  checked={getSectionEnabled('occasionCollections')} 
-                  onChange={(e) => updateSectionConfig('occasionCollections', 'enabled', e.target.checked)}
-                  className="w-4 h-4 text-indigo-600 border-slate-300 rounded focus:ring-indigo-500"
-                />
-                <label htmlFor="enable-occasionCollections" className="ml-2 text-sm font-medium text-slate-700">Enable</label>
-              </div>
-            </div>
-            <button 
-              onClick={() => setConfig((prev: any) => ({ ...prev, occasionCollections: [...(prev.occasionCollections || []), { title: 'OFFICE', emoji: '🌿', image: '', link: '/shop' }] }))} 
-              className="text-sm font-medium text-indigo-600 hover:text-indigo-800 flex items-center whitespace-nowrap"
-            >
-              <Plus className="w-4 h-4 mr-1" /> Add Occasion
-            </button>
-          </div>
-          
-          <div className="space-y-4">
-            {config.occasionCollections?.map((item: any, index: number) => (
-              <div key={index} className="flex gap-4 items-start p-4 bg-slate-50 rounded-lg border border-slate-200">
-                <div className="flex-1 grid grid-cols-1 md:grid-cols-4 gap-4">
-                  <div>
-                    <label className="block text-xs font-semibold text-slate-600 mb-1">Title</label>
-                    <input 
-                      type="text" 
-                      value={item.title} 
-                      onChange={(e) => updateSection('occasionCollections', index, 'title', e.target.value)}
-                      className="w-full text-sm p-2 border border-slate-300 rounded focus:ring-1 focus:ring-indigo-500" 
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-xs font-semibold text-slate-600 mb-1">Emoji</label>
-                    <input 
-                      type="text" 
-                      value={item.emoji} 
-                      onChange={(e) => updateSection('occasionCollections', index, 'emoji', e.target.value)}
-                      className="w-full text-sm p-2 border border-slate-300 rounded focus:ring-1 focus:ring-indigo-500" 
-                    />
-                  </div>
-                  <div>
-                    <ImageUploader 
-                      label="Image"
-                      folder="storefront"
-                      value={item.image}
-                      onChange={(url) => updateSection('occasionCollections', index, 'image', url)}
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-xs font-semibold text-slate-600 mb-1">Link URL</label>
-                    <input 
-                      type="text" 
-                      value={item.link} 
-                      onChange={(e) => updateSection('occasionCollections', index, 'link', e.target.value)}
-                      className="w-full text-sm p-2 border border-slate-300 rounded focus:ring-1 focus:ring-indigo-500" 
-                    />
-                  </div>
-                </div>
-                <button 
-                  onClick={() => {
-                    setConfig((prev: any) => {
-                      const newOccasions = [...prev.occasionCollections];
-                      newOccasions.splice(index, 1);
-                      return { ...prev, occasionCollections: newOccasions };
-                    });
-                  }}
-                  className="p-2 text-red-500 hover:bg-red-50 rounded transition-colors mt-6"
-                >
-                  <Trash2 className="w-4 h-4" />
-                </button>
-              </div>
-            ))}
-          </div>
-        </div>
 
         {/* Custom Offer Banners */}
         <div className="bg-white p-6 rounded-xl shadow-sm border border-slate-200">
@@ -1241,6 +840,46 @@ export default function AdminStorefront() {
                   )}
                 </div>
               ))}
+            </div>
+          </div>
+        </div>
+
+        {/* Home Page Popup */}
+        <div className="bg-white p-6 rounded-xl shadow-sm border border-slate-200">
+          <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-4">
+            <div className="flex-1 w-full flex items-center gap-4">
+              <h3 className="text-lg font-bold text-slate-900 border-b border-transparent">Home Page Popup</h3>
+              <div className="flex items-center">
+                <input 
+                  type="checkbox" 
+                  id="enable-homePopup"
+                  checked={config.homePopup?.enabled || false} 
+                  onChange={(e) => updateObject('homePopup', 'enabled', e.target.checked)}
+                  className="w-4 h-4 text-indigo-600 border-slate-300 rounded focus:ring-indigo-500"
+                />
+                <label htmlFor="enable-homePopup" className="ml-2 text-sm font-medium text-slate-700">Enable Popup</label>
+              </div>
+            </div>
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <ImageUploader 
+                label="Popup Image"
+                folder="storefront"
+                value={config.homePopup?.image || ''}
+                onChange={(url) => updateObject('homePopup', 'image', url)}
+              />
+            </div>
+            <div>
+              <label className="block text-xs font-semibold text-slate-600 mb-1">Link URL</label>
+              <input 
+                type="text" 
+                value={config.homePopup?.link || ''} 
+                onChange={(e) => updateObject('homePopup', 'link', e.target.value)}
+                className="w-full text-sm p-2 border border-slate-300 rounded focus:ring-1 focus:ring-indigo-500 mb-4" 
+                placeholder="/shop"
+              />
+              <p className="text-xs text-slate-500">When users click the popup image, they will be redirected to this link.</p>
             </div>
           </div>
         </div>

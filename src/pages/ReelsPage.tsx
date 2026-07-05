@@ -5,6 +5,7 @@ import { BottomNav } from '@/components/BottomNav';
 import { Heart, ShoppingBag, ArrowLeft, PlaySquare, Star, Volume2, VolumeX } from 'lucide-react';
 import { useStore } from '@/lib/store';
 import { Link, useNavigate } from 'react-router-dom';
+import { getProductUrl } from '@/utils/slug';
 
 interface Product {
   id: string;
@@ -14,6 +15,8 @@ interface Product {
   videoUrl?: string;
   category: string;
   description?: string;
+  newArrival?: boolean;
+  slug?: string;
 }
 
 const ReelVideo = ({ src, isMuted }: { src: string; isMuted: boolean }) => {
@@ -145,7 +148,7 @@ export default function ReelsPage() {
                   <span className="inline-block px-2 py-1 bg-white/20 backdrop-blur-md text-white text-[10px] font-bold uppercase tracking-wider rounded-md mb-3">
                     {product.category}
                   </span>
-                  <Link to={`/product/${product.id}`}>
+                  <Link to={getProductUrl(product)}>
                     <h2 className="text-2xl font-bold text-white leading-tight mb-2 hover:underline decoration-white/50">
                       {product.name}
                     </h2>

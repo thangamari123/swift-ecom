@@ -7,12 +7,18 @@ import { collection, onSnapshot, query, where } from "firebase/firestore";
 import { Link, useSearchParams } from "react-router-dom";
 import { useStore } from "@/lib/store";
 import { toast } from "react-toastify";
-import { ShoppingCart, Heart, Filter, Star, Check, ChevronRight, ChevronLeft, Search } from "lucide-react";
+import { Heart, Search, Filter, X, Grid, List, SlidersHorizontal, ChevronDown, Star, Check, ChevronRight, ChevronLeft, ShoppingCart } from 'lucide-react';
+import { getProductUrl } from '@/utils/slug';
 
 interface Product {
   id: string;
   name: string;
   price: number;
+  sizes?: string[];
+  colors?: string[];
+  newArrival?: boolean;
+  trending?: boolean;
+  slug?: string;
   imageUrl: string;
   category: string;
   description: string;
@@ -78,7 +84,7 @@ export default function ShopPage() {
 
   const ProductCard = ({ product }: { product: Product }) => (
     <Link
-      to={`/product/${product.id}`}
+      to={getProductUrl(product)}
       className="group flex flex-col bg-white rounded-2xl overflow-hidden border border-slate-100 shadow-sm hover:shadow-lg transition-all duration-300 hover:-translate-y-1"
     >
       <div className="relative aspect-square bg-[#f8f9fa] flex items-center justify-center overflow-hidden p-6">
@@ -137,7 +143,7 @@ export default function ShopPage() {
         {/* Banner */}
         <div className="relative w-full h-32 md:h-48 bg-slate-900 mb-6 md:mb-8 md:rounded-b-3xl overflow-hidden flex items-center justify-center">
           <img src="https://images.unsplash.com/photo-1441986300917-64674bd600d8?q=80&w=1200" className="absolute inset-0 w-full h-full object-cover opacity-40" />
-          <h1 className="relative z-10 text-3xl md:text-5xl font-black text-white tracking-tight drop-shadow-lg">
+          <h1 className="relative z-10 text-2xl md:text-4xl font-black text-white tracking-tight drop-shadow-lg">
             {categoryFilter ? `${categoryFilter.trim()}'s Collection` : 'All Products'}
           </h1>
         </div>
@@ -248,6 +254,43 @@ export default function ShopPage() {
                   </select>
                 </div>
               </div>
+            </div>
+
+            {/* Mobile Category Pills */}
+            <div className="md:hidden flex overflow-x-auto gap-2.5 mb-6 pb-2 [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
+              <button
+                onClick={() => {
+                  const newParams = new URLSearchParams(searchParams);
+                  newParams.delete("category");
+                  setSearchParams(newParams);
+                  setCurrentPage(1);
+                }}
+                className={`whitespace-nowrap px-5 py-2.5 rounded-full text-sm font-bold border transition-all ${
+                  !categoryFilter
+                    ? 'bg-slate-900 text-white border-slate-900 shadow-md scale-105'
+                    : 'bg-white text-slate-600 border-slate-200 hover:border-slate-400'
+                }`}
+              >
+                All
+              </button>
+              {categories.map(c => (
+                <button
+                  key={c}
+                  onClick={() => {
+                    const newParams = new URLSearchParams(searchParams);
+                    newParams.set("category", c);
+                    setSearchParams(newParams);
+                    setCurrentPage(1);
+                  }}
+                  className={`whitespace-nowrap px-5 py-2.5 rounded-full text-sm font-bold border transition-all ${
+                    categoryFilter === c
+                      ? 'bg-slate-900 text-white border-slate-900 shadow-md scale-105'
+                      : 'bg-white text-slate-600 border-slate-200 hover:border-slate-400'
+                  }`}
+                >
+                  {c}
+                </button>
+              ))}
             </div>
 
             {/* Grid */}
